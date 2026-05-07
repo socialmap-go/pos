@@ -5,38 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Smart Profile | Social Map</title>
   
-  <!-- 🔴 ඇත්තම ලෝගෝ ගෙනෙන FontAwesome පුස්තකාලය -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; display: flex; justify-content: center; min-height: 100vh; }
     .profile-container { background: white; width: 100%; max-width: 400px; box-shadow: 0 0 20px rgba(0,0,0,0.05); min-height: 100vh; position: relative; display: flex; flex-direction: column; }
     .theme-banner { height: 120px; background-color: #d32f2f; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 20px; transition: background-color 0.5s;}
-    .profile-img-placeholder { width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: -40px; border: 4px solid white; }
+    
+    /* 🖼️ පින්තූරය රවුමෙන් එළියට යන එක නතර කරන්න overflow:hidden දැම්මා */
+    .profile-img-placeholder { width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: -40px; border: 4px solid white; overflow: hidden; }
+    
     .info-section { text-align: center; padding: 50px 20px 20px 20px; }
     h1 { margin: 0; font-size: 24px; color: #333; }
     p { color: #777; font-size: 14px; margin-top: 5px; }
-
     .links-section { padding: 0 20px 30px 20px; display: flex; flex-direction: column; gap: 15px; }
     
-    /* 🔴 බොත්තම් වල අලුත් ඩිසයින් එක */
     .btn { display: none; width: 100%; padding: 15px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; color: white; box-sizing: border-box; transition: transform 0.2s; border: none; cursor: pointer; align-items: center; justify-content: center; gap: 10px; }
     .btn:active { transform: scale(0.98); }
-    .btn i { font-size: 20px; } /* ලෝගෝ එකේ සයිස් එක */
+    .btn i { font-size: 20px; } 
     
-    /* සමාජ මාධ්‍ය පාට (Official Colors) */
-    .btn-wa { background: #25D366; } 
-    .btn-maps { background: #EA4335; }
-    .btn-fb { background: #1877F2; } 
-    .btn-ig { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
-    .btn-tiktok { background: #000000; } 
-    .btn-web { background: #333333; } 
-    .btn-email { background: #ea4335; } 
-    .btn-menu { background: #673AB7; } 
+    .btn-wa { background: #25D366; } .btn-maps { background: #EA4335; }
+    .btn-fb { background: #1877F2; } .btn-ig { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
+    .btn-tiktok { background: #000000; } .btn-web { background: #333333; } .btn-email { background: #ea4335; } .btn-menu { background: #673AB7; } 
     .btn-bank { background: #00695c; }
-    .btn-review { background: white; color: #333; border: 2px solid #fbbc04; box-shadow: 0 4px 6px rgba(0,0,0,0.05);}
-    .btn-review i { color: #fbbc04; }
-
+    .btn-review { background: white; color: #333; border: 2px solid #fbbc04; box-shadow: 0 4px 6px rgba(0,0,0,0.05);} .btn-review i { color: #fbbc04; }
     .btn-loyalty { background: #ff9800; animation: pulse 2s infinite;}
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 152, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0); } }
 
@@ -45,11 +37,9 @@
     .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #d32f2f; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* Modals */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
     .modal-content { width: 90%; max-width: 350px; background: white; border-radius: 15px; padding: 20px; box-sizing: border-box; text-align: center; position: relative; max-height: 90vh; overflow-y: auto;}
     .close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: #aaa; border: none; background: none;}
-    
     .loyalty-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; text-align: center;}
     .loyalty-btn { background: #d32f2f; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px;}
     .link-text { color: #d32f2f; font-size: 14px; text-decoration: underline; cursor: pointer; margin-top: 15px; display: inline-block;}
@@ -72,11 +62,8 @@
     </div>
 
     <div class="links-section">
-      <!-- 🔴 Emojis වෙනුවට ඇත්තම ලෝගෝ භාවිතා කිරීම -->
       <button class="btn btn-loyalty" id="btnLoyalty" onclick="openLoyaltyModal('viewLogin')"><i class="fas fa-gift"></i> My Loyalty Card</button>
-      
       <a href="#" id="btnReview" target="_blank" class="btn btn-review"><i class="fab fa-google"></i> Rate Us on Google</a>
-
       <button id="btnBank" class="btn btn-bank" onclick="document.getElementById('bankModal').style.display='flex'"><i class="fas fa-university"></i> Bank Details</button>
       
       <a href="#" id="btnWa" target="_blank" class="btn btn-wa"><i class="fab fa-whatsapp"></i> WhatsApp</a>
@@ -91,7 +78,6 @@
     <div class="footer">Powered by Mapa Solutions - Social Map</div>
   </div>
 
-  <!-- 🏦 Bank Modal -->
   <div id="bankModal" class="modal">
     <div class="modal-content">
       <button class="close-btn" onclick="document.getElementById('bankModal').style.display='none'">&times;</button>
@@ -101,7 +87,6 @@
     </div>
   </div>
 
-  <!-- Menu Modal -->
   <div id="menuModal" class="modal">
     <div class="modal-content" style="width: 95%; max-width: 500px; padding: 10px; height: 85%;">
       <button class="close-btn" onclick="closeModal('menuModal')">&times;</button>
@@ -109,7 +94,6 @@
     </div>
   </div>
 
-  <!-- Loyalty Modals -->
   <div id="loyaltyModal" class="modal">
     <div class="modal-content" id="viewLogin" style="display: none;">
       <button class="close-btn" onclick="closeModal('loyaltyModal')">&times;</button>
@@ -172,9 +156,20 @@
               const p = data.data;
               document.getElementById('bName').innerText = p.BusinessName;
               if(p.ThemeColor && p.ThemeColor.trim() !== "") document.getElementById('themeBanner').style.backgroundColor = p.ThemeColor;
-              document.getElementById('profileIcon').innerText = p.BusinessName.charAt(0).toUpperCase();
+              
+              // 🖼️ Profile Image එක හදන අලුත් කෝඩ් එක
+              if (p.ProfileImage && p.ProfileImage.trim() !== "") {
+                let imgUrl = p.ProfileImage;
+                let fileIdMatch = imgUrl.match(/[-\w]{25,}/); // Google Drive ලින්ක් එකෙන් ID එක හොයාගන්නවා
+                if (imgUrl.includes("drive.google.com") && fileIdMatch) {
+                  imgUrl = "https://drive.google.com/uc?export=view&id=" + fileIdMatch[0];
+                }
+                document.getElementById('profileIcon').innerHTML = `<img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover;">`;
+              } else {
+                // පින්තූරයක් නැත්නම් කඩේ නමේ පළවෙනි අකුර පෙන්නනවා
+                document.getElementById('profileIcon').innerText = p.BusinessName.charAt(0).toUpperCase();
+              }
 
-              // බොත්තම් වලට display:flex දෙන function එක
               const setupBtn = (id, link) => {
                 if(link && link.trim() !== "" && link !== "undefined") {
                   document.getElementById(id).href = link;
