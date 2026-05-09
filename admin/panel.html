@@ -75,8 +75,8 @@
     <div class="card" style="flex: 1.5;">
       <h3 style="margin-top:0;">Customer List</h3>
       <table>
-        <thead><tr><th>ID</th><th>Name</th><th>Action</th></tr></thead>
-        <tbody id="tableBody"><tr><td colspan="3">Loading...</td></tr></tbody>
+        <thead><tr><th>ID</th><th>Name</th><th>App Access</th><th>Loyalty</th><th>Action</th></tr></thead>
+        <tbody id="tableBody"><tr><td colspan="5">Loading...</td></tr></tbody>
       </table>
     </div>
 
@@ -90,8 +90,11 @@
       <div id="adminAddProductArea" style="margin-top:20px; border: 1px dashed #ccc; padding:15px; border-radius:10px;">
         <h4 style="margin-top:0;">➕ අලුත් භාණ්ඩයක් එක් කරන්න</h4>
         <div class="grid-2">
-          <input type="text" id="new_p_name" placeholder="භාණ්ඩයේ නම">
-          <input type="number" id="new_p_price" placeholder="මිල">
+          <input type="text" id="new_p_name" placeholder="භාණ්ඩයේ නම (උදා: Fried Rice)">
+          <div style="display:flex; align-items:center; gap:5px;">
+             <span style="font-weight:bold; color:#777; font-size:16px;">රු.</span>
+             <input type="number" id="new_p_price" placeholder="මිල (උදා: 1200)">
+          </div>
         </div>
         <button class="btn-save" style="width:200px; padding:10px;" onclick="adminAddProduct()">Add Product</button>
       </div>
@@ -101,14 +104,29 @@
   </div>
 
   <script>
+    // 👇 ඔයාගේ Web App URL එක මෙතනට දාන්න 👇
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzUNv3bLJX2yfMmxfoWtDyETRQ3r0yLkC5eSA9kI4DTccE-UXV471luYE7_ZXB9sLfy/exec";
 
     function loadCustomers() {
       fetch(`${APPS_SCRIPT_URL}?action=getAll`).then(res => res.json()).then(data => {
         let tbody = document.getElementById('tableBody'); tbody.innerHTML = "";
         data.data.forEach(c => {
-          const safeStr = (s) => s ? s.toString().replace(/'/g, "\\'") : '';
-          tbody.innerHTML += `<tr><td>${c.ID}</td><td>${c.BusinessName}</td><td><button class="btn-edit" onclick="editCust('${safeStr(c.ID)}','${safeStr(c.BusinessName)}','${safeStr(c.Type)}','${safeStr(c.WhatsApp)}','${safeStr(c.Maps)}','${safeStr(c.Facebook)}','${safeStr(c.Instagram)}','${safeStr(c.TikTok)}','${safeStr(c.Website)}','${safeStr(c.Email)}','${safeStr(c.MenuPDF)}','${safeStr(c.ThemeColor)}','${safeStr(c.Status)}','${safeStr(c.LoyaltyStatus)}','${safeStr(c.StampTarget)}','${safeStr(c.ClientPhone)}','${safeStr(c.Password)}','${safeStr(c.BankDetails)}','${safeStr(c.GoogleReview)}','${safeStr(c.ProfileImage)}')">Select</button></td></tr>`;
+          // Multiline text නිසා select බටන් එක කැඩෙන එක නතර කරන සුපිරි කෝඩ් එක
+          const safeStr = (s) => {
+            if (!s) return '';
+            return s.toString().replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\n/g, "\\n").replace(/\r/g, "");
+          };
+
+          let lBadge = c.LoyaltyStatus === 'Active' ? `<span style="color:green;font-weight:bold;">ON</span>` : `<span style="color:red;">OFF</span>`;
+          let appBadge = (c.ClientPhone && c.Password) ? `<span style="color:blue;font-weight:bold;">Granted</span>` : `<span style="color:gray;">No Access</span>`;
+
+          tbody.innerHTML += `<tr>
+            <td>${c.ID}</td>
+            <td>${c.BusinessName}</td>
+            <td>${appBadge}</td>
+            <td>${lBadge}</td>
+            <td><button class="btn-edit" onclick="editCust('${safeStr(c.ID)}','${safeStr(c.BusinessName)}','${safeStr(c.Type)}','${safeStr(c.WhatsApp)}','${safeStr(c.Maps)}','${safeStr(c.Facebook)}','${safeStr(c.Instagram)}','${safeStr(c.TikTok)}','${safeStr(c.Website)}','${safeStr(c.Email)}','${safeStr(c.MenuPDF)}','${safeStr(c.ThemeColor)}','${safeStr(c.Status)}','${safeStr(c.LoyaltyStatus)}','${safeStr(c.StampTarget)}','${safeStr(c.ClientPhone)}','${safeStr(c.Password)}','${safeStr(c.BankDetails)}','${safeStr(c.GoogleReview)}','${safeStr(c.ProfileImage)}')">Select</button></td>
+          </tr>`;
         });
       });
     }
@@ -118,8 +136,8 @@
       document.getElementById('c_wa').value = wa; document.getElementById('c_maps').value = maps; document.getElementById('c_fb').value = fb;
       document.getElementById('c_ig').value = ig; document.getElementById('c_tiktok').value = tiktok; document.getElementById('c_web').value = web;
       document.getElementById('c_email').value = email; document.getElementById('c_menu').value = menu; document.getElementById('c_theme').value = theme;
-      document.getElementById('c_status').value = status; document.getElementById('c_loyaltyStatus').value = lStat;
-      document.getElementById('c_stampTarget').value = lTarg; document.getElementById('c_clientPhone').value = cPh;
+      document.getElementById('c_status').value = status; document.getElementById('c_loyaltyStatus').value = lStat || 'Inactive';
+      document.getElementById('c_stampTarget').value = lTarg || 10; document.getElementById('c_clientPhone').value = cPh;
       document.getElementById('c_password').value = cPas; document.getElementById('c_bank').value = cBank;
       document.getElementById('c_review').value = cRev; document.getElementById('c_image').value = cImg;
       document.getElementById('p_shop_id').value = id; adminFetchProducts();
@@ -145,16 +163,27 @@
 
     function adminFetchProducts() {
       const sid = document.getElementById('p_shop_id').value;
-      if (!sid) {
-        alert("කරුණාකර Shop ID එක ඇතුළත් කරන්න.");
-        return;
-      }
+      if (!sid) { alert("කරුණාකර Shop ID එක ඇතුළත් කරන්න."); return; }
+      
       document.getElementById('adminProductsList').innerHTML = "Loading...";
+      
       fetch(`${APPS_SCRIPT_URL}?action=getProducts&shopId=${sid}`).then(res=>res.json()).then(d=>{
         let h = "";
         if(d.success && d.data.length > 0) {
           d.data.forEach(p => {
-            h += `<div class="product-row"><div class="grid-2"><div>${p.ProductName}</div><div style="display:flex;gap:5px;"><input type="number" id="ad_p_${p.ProductID}" value="${p.Price}"><button class="btn-edit" style="background:green;" onclick="adminUpdatePrice('${p.ProductID}')">Update</button></div></div></div>`;
+            // Undefined එන ප්‍රශ්නය විසඳීම (Space තිබුණත් වැඩ කරයි)
+            let pName = p.ProductName || p['Product Name'] || "නම නැත";
+            let pId = p.ProductID || p['Product ID'] || "No-ID";
+            let pPrice = p.Price || p['Product Price'] || 0;
+
+            h += `<div class="product-row"><div class="grid-2">
+                    <div><strong>${pName}</strong> <br><small style="color:gray;">(ID: ${pId})</small></div>
+                    <div style="display:flex; align-items:center; gap:5px;">
+                      <span style="font-weight:bold; color:#777; font-size:16px;">රු.</span>
+                      <input type="number" id="ad_p_${pId}" value="${pPrice}" style="padding:5px; width:100px;">
+                      <button class="btn-edit" style="background:green;" onclick="adminUpdatePrice('${pId}')">Update</button>
+                    </div>
+                  </div></div>`;
           });
         } else { h = "කිසිම භාණ්ඩයක් ඇතුළත් කර නැත."; }
         document.getElementById('adminProductsList').innerHTML = h;
@@ -166,19 +195,12 @@
       const name = document.getElementById('new_p_name').value;
       const price = document.getElementById('new_p_price').value;
 
-      if (!sid) {
-        alert("කරුණාකර Shop ID එක ඇතුළත් කරන්න.");
-        return;
-      }
-      if (!name || !price) {
-        alert("කරුණාකර භාණ්ඩයේ නම සහ මිල ඇතුළත් කරන්න.");
-        return;
-      }
+      if (!sid) { alert("කරුණාකර Shop ID එක ඇතුළත් කරන්න."); return; }
+      if (!name || !price) { alert("කරුණාකර භාණ්ඩයේ නම සහ මිල ඇතුළත් කරන්න."); return; }
 
       fetch(APPS_SCRIPT_URL, {method:"POST", body:JSON.stringify({action:"addProduct", shopId:sid, name:name, price:price})}).then(res=>res.json()).then(d=>{
         alert(d.message); 
-        adminFetchProducts(); // ලිස්ට් එක Refresh කරනවා
-        // Add කරාට පස්සේ කොටු දෙක හිස් කරනවා
+        adminFetchProducts(); 
         document.getElementById('new_p_name').value = "";
         document.getElementById('new_p_price').value = "";
       });
