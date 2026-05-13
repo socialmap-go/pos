@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; margin: 0; padding: 0; display: flex; justify-content: center;}
-    .container { width: 100%; max-width: 400px; margin: 20px; padding: 25px; background: white; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; box-sizing: border-box;}
+    .container { width: 100%; max-width: 400px; margin: 20px; padding: 25px; background: white; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; box-sizing: border-box; position: relative;}
     input, select { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; text-align: center; }
     .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 10px; color: white; transition: 0.2s;}
     .btn:active { transform: scale(0.98); }
@@ -16,10 +16,11 @@
     .tab { flex: 1; padding: 12px 2px; font-weight: bold; color: #777; cursor: pointer; transition: 0.3s; }
     .tab.active { background: #d32f2f; color: white; }
     
-    /* Disabled Tab Styles */
-    .tab.disabled { color: #b0bec5; cursor: not-allowed; opacity: 0.7; }
-    .upgrade-box { background: #fff3e0; border: 1px dashed #ff9800; padding: 30px 20px; border-radius: 10px; margin-top: 20px; color: #e65100; font-weight: bold; }
+    /* Disabled Tab Styles & Promos */
+    .tab.disabled { color: #999; cursor: pointer; opacity: 0.8; }
+    .upgrade-box { background: #fff3e0; border: 1px dashed #ff9800; padding: 30px 20px; border-radius: 10px; margin-top: 15px; color: #e65100; font-weight: bold; }
     .upgrade-box i { font-size: 40px; margin-bottom: 15px; color: #ff9800; }
+    .locked-card { background: #f5f5f5; border: 1px dashed #ccc; padding: 15px; border-radius: 12px; margin-bottom: 15px; color: #777; font-weight: bold;}
 
     .stat-card { background: #fff; border: 1px solid #eee; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
     .stat-number { font-size: 32px; font-weight: bold; color: #d32f2f; margin: 5px 0; }
@@ -31,9 +32,23 @@
     .product-item { background: #fafafa; border: 1px solid #ddd; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: left;}
     .product-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 5px;}
     .price-update-row { display: flex; gap: 10px; align-items: center; margin-top: 10px;}
+    
+    /* Force Logout Overlay */
+    .force-logout-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; display:none; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px; box-sizing:border-box; backdrop-filter:blur(5px); }
+    .force-logout-box { background: white; padding: 30px; border-radius: 15px; width: 100%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
   </style>
 </head>
 <body>
+
+  <!-- Force Logout Screen -->
+  <div class="force-logout-overlay" id="forceLogoutModal">
+    <div class="force-logout-box">
+      <i class="fas fa-sync-alt" style="font-size:40px; color:#1976d2; margin-bottom:15px;"></i>
+      <h3 style="margin-top:0; color:#333;">System Updated</h3>
+      <p style="color:#666; font-size:14px; margin-bottom:20px;">ඔබගේ ගිණුමේ වෙනස්කම් කිහිපයක් සිදුවී ඇත. කරුණාකර නැවත Login වන්න.</p>
+      <button class="btn" style="background:#d32f2f; margin:0;" onclick="logout()">Logout Now</button>
+    </div>
+  </div>
 
   <div class="container" id="loginBox">
     <img src="https://via.placeholder.com/80/d32f2f/ffffff?text=SM" style="border-radius:20px; margin-bottom:15px;">
@@ -66,16 +81,26 @@
     <div id="view-upgrade" style="display: none;">
       <div class="upgrade-box">
         <i class="fas fa-lock"></i>
-        <div id="upgrade-text" style="font-size: 16px;">Upgrade to use this feature</div>
-        <p style="font-size: 12px; color: #777; margin-top: 10px; font-weight: normal;">Please contact your Social Map administrator to unlock this feature for your business.</p>
+        <div id="upgrade-text" style="font-size: 18px;">Unlock This Feature!</div>
+        <p style="font-size: 13px; color: #777; margin-top: 10px; font-weight: normal;">Upgrade your plan to unlock this amazing feature and grow your business today.</p>
+        <button class="btn" style="background:#ff9800; margin-top:15px; padding:10px; font-size:14px;" onclick="switchTab('stats')">Go Back</button>
       </div>
     </div>
 
     <div id="view-stats">
       <div class="stat-card"><div class="stat-label">Total Scans</div><div class="stat-number" id="scans">...</div></div>
-      <div class="stat-card"><div class="stat-label">Loyalty Customers</div><div class="stat-number" id="loyaltyUsers">...</div></div>
-      <div class="stat-card"><div class="stat-label">Total Stamps Given</div><div class="stat-number" id="stamps">...</div></div>
-      <button class="btn" style="background:#555; padding:10px;" onclick="fetchStats()">🔄 Refresh Data</button>
+      
+      <!-- Locked Loyalty Stats -->
+      <div id="dashLoyaltyStats">
+        <div class="stat-card"><div class="stat-label">Loyalty Customers</div><div class="stat-number" id="loyaltyUsers">...</div></div>
+        <div class="stat-card"><div class="stat-label">Total Stamps Given</div><div class="stat-number" id="stamps">...</div></div>
+      </div>
+      <div id="dashLoyaltyLocked" class="locked-card" style="display:none;">
+        <i class="fas fa-lock" style="font-size:24px; color:#ccc; margin-bottom:10px; display:block;"></i>
+        Loyalty Stats Locked<br><span style="font-size:11px; font-weight:normal;">Upgrade to unlock this feature</span>
+      </div>
+
+      <button class="btn" style="background:#555; padding:10px; margin-top:10px;" onclick="fetchStats()">🔄 Refresh Data</button>
     </div>
 
     <div id="view-cashier" style="display: none;">
@@ -113,7 +138,8 @@
 
   <script>
     // WEB APP URL HERE
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxE6OPK7ps1rHR12472h5IJEpYFGAuCp_l_Um6Ed04rpAghl6XsSIsm7_Esf-IKH7M/exec";
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzZDd2mzWCngML7o1fHPokQtclB3Rx-Gnru6TDjRlEK9mpwHmaRGIbZMecziTnWdExT/exec";
+    let liveCheckInterval;
 
     function login() {
       const phone = document.getElementById('uPhone').value; const pass = document.getElementById('uPass').value;
@@ -132,18 +158,49 @@
         }).catch(err => { document.querySelector('#loginBox .btn').innerText = "Login"; alert("Network Error!"); });
     }
 
-    function logout() { localStorage.clear(); location.reload(); }
+    function logout() { 
+      localStorage.clear(); 
+      clearInterval(liveCheckInterval);
+      location.reload(); 
+    }
 
     function initApp() {
       document.getElementById('loginBox').style.display = 'none'; document.getElementById('mainApp').style.display = 'block';
       document.getElementById('shopName').innerText = localStorage.getItem('bName'); document.getElementById('shopIdDisplay').innerText = "ID: " + localStorage.getItem('shopId');
       
-      applyTabStyles(); // Gray out unpurchased tabs
+      applyTabStyles(); 
       fetchStats(); fetchProducts(); fetchFeedback();
+
+      // Start Live Checking (Every 20 seconds)
+      liveCheckInterval = setInterval(checkLiveStatus, 20000);
+    }
+
+    // Background Status Checker
+    function checkLiveStatus() {
+      if(!localStorage.getItem('shopId')) return;
+      fetch(`${APPS_SCRIPT_URL}?action=checkStatus&shopId=${localStorage.getItem('shopId')}`)
+      .then(res=>res.json()).then(data => {
+        if(data.success) {
+          if(data.loyaltyStatus !== localStorage.getItem('loyaltyStatus') ||
+             data.storeStatus !== localStorage.getItem('storeStatus') ||
+             data.inboxStatus !== localStorage.getItem('inboxStatus')) {
+              // Details have changed! Show Force Logout Overlay
+              document.getElementById('forceLogoutModal').style.display = 'flex';
+          }
+        }
+      });
     }
 
     function applyTabStyles() {
-      if(localStorage.getItem('loyaltyStatus') === 'Inactive') document.getElementById('tab-cashier').classList.add('disabled');
+      if(localStorage.getItem('loyaltyStatus') === 'Inactive') {
+        document.getElementById('tab-cashier').classList.add('disabled');
+        document.getElementById('dashLoyaltyStats').style.display = 'none';
+        document.getElementById('dashLoyaltyLocked').style.display = 'block';
+      } else {
+        document.getElementById('dashLoyaltyStats').style.display = 'block';
+        document.getElementById('dashLoyaltyLocked').style.display = 'none';
+      }
+      
       if(localStorage.getItem('storeStatus') === 'Inactive') document.getElementById('tab-products').classList.add('disabled');
       if(localStorage.getItem('inboxStatus') === 'Inactive') document.getElementById('tab-feedback').classList.add('disabled');
     }
@@ -164,11 +221,10 @@
       });
       document.getElementById('view-upgrade').style.display = "none";
 
-      // Check if feature is inactive
+      // Check if feature is locked
       if(tab !== 'stats' && statuses[tab] === 'Inactive') {
          document.getElementById('tab-' + tab).classList.add('active');
          document.getElementById('view-upgrade').style.display = "block";
-         document.getElementById('upgrade-text').innerText = `🔒 Upgrade for use this feature!`;
          return;
       }
 
@@ -178,6 +234,7 @@
 
     function fetchStats() { fetch(`${APPS_SCRIPT_URL}?action=getClientStats&shopId=${localStorage.getItem('shopId')}`).then(res => res.json()).then(data => { if(data.success) { document.getElementById('scans').innerText = data.totalScans; document.getElementById('loyaltyUsers').innerText = data.loyaltyCustomers; document.getElementById('stamps').innerText = data.totalStamps; } }); }
 
+    // (Cashier checks and actions remain same)
     function checkCustomerLoyalty() {
       const shopId = localStorage.getItem('shopId'); const phone = document.getElementById('cPhone').value;
       const msgBox = document.getElementById('actionMsg');
@@ -205,6 +262,14 @@
           if(data.success && data.data.length > 0) {
             data.data.forEach(p => {
               let pName = p.ProductName || p['Product Name'] || "No Name"; let pId = p.ProductID || p['Product ID'] || ""; let pPrice = p.Price || p['Product Price'] || 0; let pType = p.Type || "Product";
+              
+              // Load Images if available
+              let imgs = "";
+              if(p.Image1) imgs += `<img src="${p.Image1}" style="width:60px; height:60px; object-fit:cover; border-radius:5px; border:1px solid #ddd;">`;
+              if(p.Image2) imgs += `<img src="${p.Image2}" style="width:60px; height:60px; object-fit:cover; border-radius:5px; border:1px solid #ddd;">`;
+              if(p.Image3) imgs += `<img src="${p.Image3}" style="width:60px; height:60px; object-fit:cover; border-radius:5px; border:1px solid #ddd;">`;
+              let imgHtml = imgs ? `<div style="display:flex; gap:10px; margin-top:10px; overflow-x:auto;">${imgs}</div>` : '';
+
               list.innerHTML += `<div class="product-item">
                   <div style="font-size:11px; background:#ddd; padding:2px 5px; border-radius:3px; display:inline-block; margin-bottom:5px;">${pType}</div>
                   <div class="product-title">${pName}</div>
@@ -212,7 +277,9 @@
                     <span style="font-weight:bold; color:#777;">Rs.</span>
                     <input type="number" id="price_${pId}" value="${pPrice}" style="margin:0; padding:10px; flex:1;">
                     <button class="btn" style="background:#1976d2; margin:0; padding:10px 15px; font-size:14px; width:auto;" onclick="updatePrice('${pId}')">Update</button>
-                  </div></div>`;
+                  </div>
+                  ${imgHtml}
+                </div>`;
             });
           } else { list.innerHTML = "<p style='color:gray;'>No items added yet.</p>"; }
         });
