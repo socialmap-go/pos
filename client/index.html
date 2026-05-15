@@ -1,318 +1,308 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="si">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Business Portal | Social Map</title>
+  <title>Business Dashboard | Social Map</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; margin: 0; padding: 0; display: flex; justify-content: center;}
-    .container { width: 100%; max-width: 400px; margin: 20px; padding: 25px; background: white; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; box-sizing: border-box; position: relative;}
-    input, select { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; text-align: center; }
-    .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 10px; color: white; transition: 0.2s;}
-    .btn:active { transform: scale(0.98); }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 0; }
+    .container { max-width: 800px; margin: 0 auto; padding: 20px; }
     
-    .tab-container { display: flex; background: #eee; border-radius: 10px; margin-bottom: 20px; overflow: hidden; font-size: 13px;}
-    .tab { flex: 1; padding: 12px 2px; font-weight: bold; color: #777; cursor: pointer; transition: 0.3s; }
-    .tab.active { background: #d32f2f; color: white; }
+    /* Login Screen */
+    .login-box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: center; margin-top: 50px; }
+    input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+    .btn { background: #1976d2; color: white; padding: 12px; border: none; border-radius: 8px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
     
-    /* Disabled Tab Styles & Promos */
-    .tab.disabled { color: #999; cursor: pointer; opacity: 0.8; }
-    .upgrade-box { background: #fff3e0; border: 1px dashed #ff9800; padding: 30px 20px; border-radius: 10px; margin-top: 15px; color: #e65100; font-weight: bold; }
-    .upgrade-box i { font-size: 40px; margin-bottom: 15px; color: #ff9800; }
-    .locked-card { background: #f5f5f5; border: 1px dashed #ccc; padding: 15px; border-radius: 12px; margin-bottom: 15px; color: #777; font-weight: bold;}
+    /* Dashboard Header */
+    .header { background: #1565c0; color: white; padding: 15px 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .header h2 { margin: 0; font-size: 20px; }
+    .logout-btn { background: rgba(255,255,255,0.2); border: none; padding: 8px 15px; border-radius: 5px; color: white; cursor: pointer; font-weight: bold; }
+    
+    /* Tabs Navigation */
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab-btn { flex: 1; padding: 12px; border: none; background: #e3f2fd; color: #1565c0; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+    .tab-btn.active { background: #1976d2; color: white; }
+    .tab-content { display: none; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .tab-content.active { display: block; }
 
-    .stat-card { background: #fff; border: 1px solid #eee; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-    .stat-number { font-size: 32px; font-weight: bold; color: #d32f2f; margin: 5px 0; }
-    .stat-label { color: #777; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .stat-card { background: #fafafa; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #eee; }
+    .stat-card h3 { margin: 0; font-size: 24px; color: #1976d2; }
+    .stat-card p { margin: 5px 0 0 0; font-size: 13px; color: #666; font-weight: bold; }
+
+    /* Orders View */
+    .order-card { background: #fff8e1; border-left: 5px solid #ffb300; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+    .order-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 5px; }
     
-    .input-label { text-align: left; font-size: 13px; font-weight: bold; color: #555; display: block; margin-top: 10px;}
-    .msg { padding: 15px; border-radius: 8px; font-weight: bold; display: none; margin-top: 10px; font-size: 14px;}
-    
-    .product-item { background: #fafafa; border: 1px solid #ddd; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: left;}
-    .product-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 5px;}
-    .price-update-row { display: flex; gap: 10px; align-items: center; margin-top: 10px;}
-    
-    /* Force Logout Overlay */
-    .force-logout-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; display:none; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px; box-sizing:border-box; backdrop-filter:blur(5px); }
-    .force-logout-box { background: white; padding: 30px; border-radius: 15px; width: 100%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .msg { padding: 10px; border-radius: 5px; margin-top: 10px; display: none; font-weight: bold; text-align: center; }
   </style>
 </head>
 <body>
 
-  <!-- Force Logout Screen -->
-  <div class="force-logout-overlay" id="forceLogoutModal">
-    <div class="force-logout-box">
-      <i class="fas fa-sync-alt" style="font-size:40px; color:#1976d2; margin-bottom:15px;"></i>
-      <h3 style="margin-top:0; color:#333;">System Updated</h3>
-      <p style="color:#666; font-size:14px; margin-bottom:20px;">ඔබගේ ගිණුමේ වෙනස්කම් කිහිපයක් සිදුවී ඇත. කරුණාකර නැවත Login වන්න.</p>
-      <button class="btn" style="background:#d32f2f; margin:0;" onclick="logout()">Logout Now</button>
+  <div class="container" id="loginView">
+    <div class="login-box">
+      <h2 style="color: #1976d2;"><i class="fas fa-chart-line"></i> Business Portal</h2>
+      <p style="color: gray; font-size: 14px;">ඔබගේ දුරකථන අංකය සහ මුරපදය ඇතුළත් කරන්න.</p>
+      <input type="tel" id="uPhone" placeholder="දුරකථන අංකය (07XXXXXXXX)" maxlength="10">
+      <input type="password" id="uPass" placeholder="මුරපදය (Password)">
+      <button class="btn" onclick="login()">Login</button>
+      <div id="loginMsg" class="msg"></div>
     </div>
   </div>
 
-  <div class="container" id="loginBox">
-    <img src="https://via.placeholder.com/80/d32f2f/ffffff?text=SM" style="border-radius:20px; margin-bottom:15px;">
-    <h2>Business Login</h2>
-    <p style="color:#777; font-size:14px;">Login to your business portal</p>
-    <input type="tel" id="uPhone" placeholder="Phone Number (07XXXXXXXX)">
-    <input type="password" id="uPass" placeholder="Password">
-    <button class="btn" style="background:#d32f2f;" onclick="login()">Login</button>
-    <p id="loginMsg" style="color:red; font-size:13px; display:none;"></p>
-  </div>
-
-  <div class="container" id="mainApp" style="display: none; padding-top: 20px;">
-    
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-      <div style="text-align:left;">
-        <h3 id="shopName" style="margin:0; color:#d32f2f;">Shop Name</h3>
-        <p style="margin:0; font-size:12px; color:gray;" id="shopIdDisplay">ID: --</p>
+  <div class="container" id="dashboardView" style="display: none;">
+    <div class="header">
+      <div>
+        <h2 id="shopName">Shop Name</h2>
+        <span style="font-size: 12px; background: #e65100; padding: 3px 8px; border-radius: 10px;">Manager View</span>
       </div>
-      <button onclick="logout()" style="background:none; border:none; color:#777; text-decoration:underline; cursor:pointer;">Logout</button>
+      <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
 
-    <div class="tab-container">
-      <div class="tab active" id="tab-stats" onclick="switchTab('stats')">📊 Dash</div>
-      <div class="tab" id="tab-cashier" onclick="switchTab('cashier')">🎁 Loyalty</div>
-      <div class="tab" id="tab-products" onclick="switchTab('products')">📦 Store</div>
-      <div class="tab" id="tab-feedback" onclick="switchTab('feedback')">📝 Inbox</div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('analytics')"><i class="fas fa-chart-bar"></i> Analytics</button>
+      <button class="tab-btn" onclick="switchTab('orders')"><i class="fas fa-bell"></i> Live Orders</button>
+      <button class="tab-btn" onclick="switchTab('settings')"><i class="fas fa-cog"></i> Settings</button>
     </div>
 
-    <!-- UPGRADE MESSAGE VIEW -->
-    <div id="view-upgrade" style="display: none;">
-      <div class="upgrade-box">
-        <i class="fas fa-lock"></i>
-        <div id="upgrade-text" style="font-size: 18px;">Unlock This Feature!</div>
-        <p style="font-size: 13px; color: #777; margin-top: 10px; font-weight: normal;">Upgrade your plan to unlock this amazing feature and grow your business today.</p>
-        <button class="btn" style="background:#ff9800; margin-top:15px; padding:10px; font-size:14px;" onclick="switchTab('stats')">Go Back</button>
+    <div id="analytics" class="tab-content active">
+      <h3 style="margin-top: 0; color: #333;">ව්‍යාපාරික සාරාංශය</h3>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3 id="st_revenue">රු. 0</h3>
+          <p>මුළු ආදායම (POS)</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="st_scans">0</h3>
+          <p>QR Scans</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="st_customers">0</h3>
+          <p>Loyalty ගිණුම්</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="st_stamps">0</h3>
+          <p>දුන් ලකුණු (Points)</p>
+        </div>
+      </div>
+      <button class="btn" style="background: #2e7d32;" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> බිල්පත් සහ සාරාංශ වාර්තාව බාගන්න (Download PDF)</button>
+    </div>
+
+    <div id="orders" class="tab-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3 style="margin: 0; color: #333;">Live Orders (KOT)</h3>
+        <span style="font-size: 12px; color: green; font-weight: bold;"><i class="fas fa-sync fa-spin"></i> Auto-updating...</span>
+      </div>
+      <div id="ordersList">
+        <p style="color: gray; text-align: center;">Loading orders...</p>
       </div>
     </div>
 
-    <div id="view-stats">
-      <div class="stat-card"><div class="stat-label">Total Scans</div><div class="stat-number" id="scans">...</div></div>
-      
-      <!-- Locked Loyalty Stats -->
-      <div id="dashLoyaltyStats">
-        <div class="stat-card"><div class="stat-label">Loyalty Customers</div><div class="stat-number" id="loyaltyUsers">...</div></div>
-        <div class="stat-card"><div class="stat-label">Total Stamps Given</div><div class="stat-number" id="stamps">...</div></div>
+    <div id="settings" class="tab-content">
+      <h3 style="margin-top: 0; color: #333;">පද්ධති සැකසුම් (System Settings)</h3>
+      <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+        <label style="font-weight: bold; font-size: 14px; color: #555;">Loyalty Point අගය (රුපියල්)</label>
+        <p style="font-size: 12px; color: gray; margin: 5px 0 10px 0;">උදා: මෙහි 1000 ලෙස දැමුවහොත්, පාරිභෝගිකයාගේ රු. 2500 ක බිලට Points 2.5 ක් ස්වයංක්‍රීයව හිමිවේ.</p>
+        <input type="number" id="set_stampValue" placeholder="උදා: 1000" style="margin-bottom: 15px;">
+        
+        <button class="btn" style="background: #ef6c00; margin: 0;" onclick="saveSettings()">Save Settings</button>
+        <div id="settingMsg" class="msg"></div>
       </div>
-      <div id="dashLoyaltyLocked" class="locked-card" style="display:none;">
-        <i class="fas fa-lock" style="font-size:24px; color:#ccc; margin-bottom:10px; display:block;"></i>
-        Loyalty Stats Locked<br><span style="font-size:11px; font-weight:normal;">Upgrade to unlock this feature</span>
-      </div>
-
-      <button class="btn" style="background:#555; padding:10px; margin-top:10px;" onclick="fetchStats()">🔄 Refresh Data</button>
-    </div>
-
-    <div id="view-cashier" style="display: none;">
-      <span class="input-label">Customer Phone Number</span>
-      <div style="display:flex; gap:10px; margin-bottom:10px;">
-        <input type="tel" id="cPhone" placeholder="07XXXXXXXX" maxlength="10" style="margin:0; flex:1;">
-        <button class="btn" style="background:#1976d2; margin:0; width:auto; padding:0 20px;" onclick="checkCustomerLoyalty()">🔍 Check</button>
-      </div>
-      <span class="input-label">Number of Stamps</span>
-      <input type="number" id="cStampCount" value="1" min="1">
-      <button class="btn" style="background:#2e7d32;" onclick="processAction('loyaltyAddStamp')">+ Add Stamps</button>
-      <button class="btn" style="background:#ff9800;" onclick="processAction('loyaltyRedeem')">🎁 Redeem Reward</button>
-      <button class="btn" style="background:#757575;" onclick="processAction('loyaltyCashierReset')">🔄 Reset PIN</button>
-      <div id="actionMsg" class="msg"></div>
-    </div>
-
-    <div id="view-products" style="display: none;">
-      <div style="background:#f9f9f9; padding:15px; border-radius:10px; margin-bottom:20px; border: 1px dashed #ccc;">
-        <h4 style="margin-top:0;">➕ Add New Item</h4>
-        <select id="new_p_type" style="margin-top:0;"><option value="Product">🍽️ Product / Food</option><option value="Room">🛏️ Hotel Room</option><option value="Package">🎁 Special Package</option></select>
-        <input type="text" id="new_p_name" placeholder="Name (e.g. Fried Rice)">
-        <input type="number" id="new_p_price" placeholder="Price (e.g. 1200)">
-        <button class="btn" style="background:#2e7d32;" onclick="addProductClient()">Add Item</button>
-      </div>
-      <div id="productMsg" class="msg" style="padding:10px; font-size:13px;"></div>
-      <div id="productsList">Loading products...</div>
-    </div>
-
-    <div id="view-feedback" style="display: none;">
-      <h4 style="text-align:left; color:#555; margin-top:0;">Customer Feedback & Suggestions</h4>
-      <div id="feedbackList">Loading feedbacks...</div>
     </div>
 
   </div>
 
   <script>
     // WEB APP URL HERE
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzU8NQF6m62kbDwCr6ol48LEVl8-veggT_bR5Lue7sIrJWlgpiI7GzosU_PqZzzV0JP/exec";
-    let liveCheckInterval;
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcHuHqBTZbgujvCdEoXOp8FyCWFzTyWB2Sjkwa39z4JQ2lx2dD7XsisJ_BucdPf0c/exec";
+    let orderInterval;
+
+    function showMsg(id, text, isError) {
+      const m = document.getElementById(id);
+      m.innerText = text;
+      m.style.display = "block";
+      m.style.background = isError ? "#ffebee" : "#e8f5e9";
+      m.style.color = isError ? "#c62828" : "#2e7d32";
+      setTimeout(() => m.style.display = "none", 4000);
+    }
 
     function login() {
-      const phone = document.getElementById('uPhone').value; const pass = document.getElementById('uPass').value;
-      document.getElementById('loginMsg').style.display="none"; document.querySelector('#loginBox .btn').innerText = "Loading...";
-      fetch(`${APPS_SCRIPT_URL}?action=clientLogin&phone=${phone}&password=${pass}`).then(res => res.json()).then(data => {
-          document.querySelector('#loginBox .btn').innerText = "Login";
-          if(data.success) { 
-            localStorage.setItem('shopId', data.shopId); 
-            localStorage.setItem('bName', data.businessName); 
-            localStorage.setItem('loyaltyStatus', data.loyaltyStatus);
-            localStorage.setItem('storeStatus', data.storeStatus);
-            localStorage.setItem('inboxStatus', data.inboxStatus);
-            initApp(); 
-          } 
-          else { const m = document.getElementById('loginMsg'); m.innerText = data.error; m.style.display="block"; }
-        }).catch(err => { document.querySelector('#loginBox .btn').innerText = "Login"; alert("Network Error!"); });
-    }
-
-    function logout() { 
-      localStorage.clear(); 
-      clearInterval(liveCheckInterval);
-      location.reload(); 
-    }
-
-    function initApp() {
-      document.getElementById('loginBox').style.display = 'none'; document.getElementById('mainApp').style.display = 'block';
-      document.getElementById('shopName').innerText = localStorage.getItem('bName'); document.getElementById('shopIdDisplay').innerText = "ID: " + localStorage.getItem('shopId');
+      const phone = document.getElementById('uPhone').value;
+      const pass = document.getElementById('uPass').value;
+      if (!phone || !pass) { showMsg('loginMsg', 'කරුණාකර සියලු විස්තර ඇතුළත් කරන්න.', true); return; }
       
-      applyTabStyles(); 
-      fetchStats(); fetchProducts(); fetchFeedback();
-
-      // Start Live Checking (Every 20 seconds)
-      liveCheckInterval = setInterval(checkLiveStatus, 20000);
-    }
-
-    // Background Status Checker
-    function checkLiveStatus() {
-      if(!localStorage.getItem('shopId')) return;
-      fetch(`${APPS_SCRIPT_URL}?action=checkStatus&shopId=${localStorage.getItem('shopId')}`)
-      .then(res=>res.json()).then(data => {
-        if(data.success) {
-          if(data.loyaltyStatus !== localStorage.getItem('loyaltyStatus') ||
-             data.storeStatus !== localStorage.getItem('storeStatus') ||
-             data.inboxStatus !== localStorage.getItem('inboxStatus')) {
-              // Details have changed! Show Force Logout Overlay
-              document.getElementById('forceLogoutModal').style.display = 'flex';
+      document.querySelector('#loginView .btn').innerText = "Verifying...";
+      
+      fetch(`${APPS_SCRIPT_URL}?action=clientLogin&phone=${phone}&password=${pass}`)
+        .then(res => res.json())
+        .then(data => {
+          document.querySelector('#loginView .btn').innerText = "Login";
+          if (data.success) {
+            if(data.isExpired) { showMsg('loginMsg', "ඔබගේ සේවා කාලය අවසන් වී ඇත.", true); return; }
+            
+            sessionStorage.setItem('clientShopId', data.shopId);
+            sessionStorage.setItem('clientShopName', data.businessName);
+            sessionStorage.setItem('clientStampVal', data.stampValue || "");
+            
+            initDashboard();
+          } else {
+            showMsg('loginMsg', data.error || "දුරකථන අංකය හෝ මුරපදය වැරදියි.", true);
           }
-        }
-      });
+        }).catch(err => {
+          document.querySelector('#loginView .btn').innerText = "Login";
+          showMsg('loginMsg', "Network Error. Please try again.", true);
+        });
     }
 
-    function applyTabStyles() {
-      if(localStorage.getItem('loyaltyStatus') === 'Inactive') {
-        document.getElementById('tab-cashier').classList.add('disabled');
-        document.getElementById('dashLoyaltyStats').style.display = 'none';
-        document.getElementById('dashLoyaltyLocked').style.display = 'block';
-      } else {
-        document.getElementById('dashLoyaltyStats').style.display = 'block';
-        document.getElementById('dashLoyaltyLocked').style.display = 'none';
-      }
+    function logout() {
+      sessionStorage.clear();
+      clearInterval(orderInterval);
+      location.reload();
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
       
-      if(localStorage.getItem('storeStatus') === 'Inactive') document.getElementById('tab-products').classList.add('disabled');
-      if(localStorage.getItem('inboxStatus') === 'Inactive') document.getElementById('tab-feedback').classList.add('disabled');
+      document.getElementById(tabId).classList.add('active');
+      event.currentTarget.classList.add('active');
+      
+      if(tabId === 'orders') { fetchOrders(); }
     }
 
-    if(localStorage.getItem('shopId')) initApp();
+    function initDashboard() {
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('dashboardView').style.display = 'block';
+      document.getElementById('shopName').innerText = sessionStorage.getItem('clientShopName');
+      document.getElementById('set_stampValue').value = sessionStorage.getItem('clientStampVal');
+      
+      loadStats();
+      
+      // Auto-refresh orders every 30 seconds
+      orderInterval = setInterval(fetchOrders, 30000);
+    }
 
-    function switchTab(tab) {
-      const statuses = {
-         'cashier': localStorage.getItem('loyaltyStatus') || 'Inactive',
-         'products': localStorage.getItem('storeStatus') || 'Active',
-         'feedback': localStorage.getItem('inboxStatus') || 'Active'
-      };
+    // Auto-login if session exists
+    if (sessionStorage.getItem('clientShopId')) { initDashboard(); }
 
-      // Reset all views and tabs
-      ['stats', 'cashier', 'products', 'feedback'].forEach(t => {
-        document.getElementById('tab-' + t).classList.remove('active');
-        document.getElementById('view-' + t).style.display = "none";
+    function loadStats() {
+      const shopId = sessionStorage.getItem('clientShopId');
+      fetch(`${APPS_SCRIPT_URL}?action=getClientStats&shopId=${shopId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            document.getElementById('st_scans').innerText = data.totalScans || 0;
+            document.getElementById('st_customers').innerText = data.loyaltyCustomers || 0;
+            document.getElementById('st_stamps').innerText = data.totalStamps || 0;
+            document.getElementById('st_revenue').innerText = "රු. " + (data.totalRevenue || 0).toLocaleString();
+          }
+        });
+    }
+
+    function saveSettings() {
+      const shopId = sessionStorage.getItem('clientShopId');
+      const stampVal = document.getElementById('set_stampValue').value;
+      
+      if(!stampVal || stampVal <= 0) { showMsg('settingMsg', "කරුණාකර නිවැරදි අගයක් ඇතුළත් කරන්න.", true); return; }
+      
+      document.querySelector('#settings .btn').innerText = "Saving...";
+      
+      fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "updateClientSettings", shopId: shopId, stampValue: stampVal })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.querySelector('#settings .btn').innerText = "Save Settings";
+        if (data.success) {
+          sessionStorage.setItem('clientStampVal', stampVal);
+          showMsg('settingMsg', data.message, false);
+        } else {
+          showMsg('settingMsg', data.error, true);
+        }
+      }).catch(err => {
+        document.querySelector('#settings .btn').innerText = "Save Settings";
+        showMsg('settingMsg', "Network Error!", true);
       });
-      document.getElementById('view-upgrade').style.display = "none";
-
-      // Check if feature is locked
-      if(tab !== 'stats' && statuses[tab] === 'Inactive') {
-         document.getElementById('tab-' + tab).classList.add('active');
-         document.getElementById('view-upgrade').style.display = "block";
-         return;
-      }
-
-      document.getElementById('tab-' + tab).classList.add('active');
-      document.getElementById('view-' + tab).style.display = "block";
     }
 
-    function fetchStats() { fetch(`${APPS_SCRIPT_URL}?action=getClientStats&shopId=${localStorage.getItem('shopId')}`).then(res => res.json()).then(data => { if(data.success) { document.getElementById('scans').innerText = data.totalScans; document.getElementById('loyaltyUsers').innerText = data.loyaltyCustomers; document.getElementById('stamps').innerText = data.totalStamps; } }); }
-
-    // (Cashier checks and actions remain same)
-    function checkCustomerLoyalty() {
-      const shopId = localStorage.getItem('shopId'); const phone = document.getElementById('cPhone').value;
-      const msgBox = document.getElementById('actionMsg');
-      if(phone.length !== 10) { showMsg('actionMsg', "Please enter a valid 10-digit number.", false); return; }
-      msgBox.innerText = "Checking..."; msgBox.style.display="block"; msgBox.style.background="#e3f2fd"; msgBox.style.color="#1565c0";
-      fetch(`${APPS_SCRIPT_URL}?action=getCashierLoyalty&shopId=${shopId}&phone=${phone}`).then(res=>res.json()).then(data => {
-        if(data.success) {
-           msgBox.innerHTML = `Current Stamps: <span style="font-size:18px; font-weight:bold; color:#d32f2f;">${data.stamps}</span> <br> Total Redeemed Rewards: <span style="font-size:18px; font-weight:bold; color:#2e7d32;">${data.redeemed}</span>`;
-        } else { showMsg('actionMsg', data.error, false); }
-      }).catch(err => showMsg('actionMsg', "Network Error", false));
-    }
-
-    function processAction(actionType) {
-      const shopId = localStorage.getItem('shopId'); const phone = document.getElementById('cPhone').value; const count = document.getElementById('cStampCount').value; const msgBox = document.getElementById('actionMsg');
-      if(phone.length !== 10) { showMsg('actionMsg', "Please enter a valid 10-digit number.", false); return; }
-      msgBox.innerText = "Processing..."; msgBox.style.display="block"; msgBox.style.background="#eee"; msgBox.style.color="black";
-      fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: actionType, shopId: shopId, phone: phone, stampCount: count }) }).then(res => res.json()).then(data => { if(data.success) { showMsg('actionMsg', data.message, true); document.getElementById('cPhone').value = ""; document.getElementById('cStampCount').value = 1; fetchStats(); } else { showMsg('actionMsg', data.error, false); } }).catch(err => showMsg('actionMsg', "Network Error!", false));
-    }
-
-    function showMsg(id, text, success) { let m = document.getElementById(id); m.innerText = text; m.style.background = success ? "#d4edda" : "#f8d7da"; m.style.color = success ? "#155724" : "#721c24"; m.style.display = "block"; }
-
-    function fetchProducts() {
-      fetch(`${APPS_SCRIPT_URL}?action=getProducts&shopId=${localStorage.getItem('shopId')}`).then(res => res.json()).then(data => {
-          const list = document.getElementById('productsList'); list.innerHTML = "";
-          if(data.success && data.data.length > 0) {
-            data.data.forEach(p => {
-              let pName = p.ProductName || p['Product Name'] || "No Name"; let pId = p.ProductID || p['Product ID'] || ""; let pPrice = p.Price || p['Product Price'] || 0; let pType = p.Type || "Product";
+    function fetchOrders() {
+      const shopId = sessionStorage.getItem('clientShopId');
+      fetch(`${APPS_SCRIPT_URL}?action=getOrders&shopId=${shopId}`)
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById('ordersList');
+          list.innerHTML = "";
+          if (data.success && data.data.length > 0) {
+            data.data.forEach(o => {
+              let itemsHtml = "";
+              try {
+                let itemsObj = JSON.parse(o.Items);
+                for(let item in itemsObj) { itemsHtml += `• ${item} (x${itemsObj[item]})<br>`; }
+              } catch(e) { itemsHtml = o.Items; }
               
-              // Load Images if available
-              let imgs = "";
-              if(p.Image1) imgs += `<img src="${p.Image1}" style="width:60px; height:60px; object-fit:cover; border-radius:5px; border:1px solid #ddd;">`;
-              if(p.Image2) imgs += `<img src="${p.Image2}" style="width:60px; height:60px; object-fit:cover; border-radius:5px; border:1px solid #ddd;">`;
-              if(p.Image3) imgs += `<img src="${p.Image3}" style="width:60px; height:60px; object-fit:cover; border-radius:5px; border:1px solid #ddd;">`;
-              let imgHtml = imgs ? `<div style="display:flex; gap:10px; margin-top:10px; overflow-x:auto;">${imgs}</div>` : '';
+              let statusColor = o.Status === 'Pending' ? '#d32f2f' : (o.Status === 'Preparing' ? '#ff9800' : '#388e3c');
 
-              list.innerHTML += `<div class="product-item">
-                  <div style="font-size:11px; background:#ddd; padding:2px 5px; border-radius:3px; display:inline-block; margin-bottom:5px;">${pType}</div>
-                  <div class="product-title">${pName}</div>
-                  <div class="price-update-row">
-                    <span style="font-weight:bold; color:#777;">Rs.</span>
-                    <input type="number" id="price_${pId}" value="${pPrice}" style="margin:0; padding:10px; flex:1;">
-                    <button class="btn" style="background:#1976d2; margin:0; padding:10px 15px; font-size:14px; width:auto;" onclick="updatePrice('${pId}')">Update</button>
+              list.innerHTML += `
+                <div class="order-card">
+                  <div class="order-header">
+                    <span>${o.OrderID} | Table: ${o.TableNo}</span>
+                    <span style="color: ${statusColor};">${o.Status}</span>
                   </div>
-                  ${imgHtml}
+                  <div style="font-size:14px; margin-bottom:10px;">
+                    <strong>Customer:</strong> ${o.CustomerName} (${o.Phone || 'N/A'})<br>
+                    <div style="background:white; padding:8px; border-radius:5px; margin-top:5px; border:1px solid #eee;">${itemsHtml}</div>
+                    <div style="margin-top:5px; text-align:right; font-weight:bold; color:#1976d2;">Total: රු. ${o.TotalAmount}</div>
+                  </div>
                 </div>`;
             });
-          } else { list.innerHTML = "<p style='color:gray;'>No items added yet.</p>"; }
-        });
+          } else {
+            list.innerHTML = "<p style='text-align:center; color:gray; font-style:italic;'>දැනට නව ඇණවුම් නොමැත.</p>";
+          }
+        }).catch(err => console.log(err));
     }
 
-    function updatePrice(productId) {
-      const msgBox = document.getElementById('productMsg'); msgBox.innerText = "Updating..."; msgBox.style.display="block"; msgBox.style.background="#eee"; msgBox.style.color="black";
-      fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'updatePrice', shopId: localStorage.getItem('shopId'), productId: productId, price: document.getElementById('price_' + productId).value }) }).then(res => res.json()).then(data => { if(data.success) { showMsg('productMsg', "Price updated successfully!", true); } else { showMsg('productMsg', data.error || "Error", false); } setTimeout(() => msgBox.style.display="none", 3000); });
+    // Generate PDF Report using jsPDF
+    function generatePDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      const shopName = sessionStorage.getItem('clientShopName');
+      const rev = document.getElementById('st_revenue').innerText;
+      const cust = document.getElementById('st_customers').innerText;
+      const pts = document.getElementById('st_stamps').innerText;
+      
+      doc.setFontSize(22);
+      doc.setTextColor(21, 101, 192);
+      doc.text("Business Performance Report", 20, 20);
+      
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Shop Name: ${shopName}`, 20, 35);
+      doc.text(`Date Generated: ${new Date().toLocaleDateString()}`, 20, 45);
+      
+      doc.setLineWidth(0.5);
+      doc.line(20, 50, 190, 50);
+      
+      doc.setFontSize(16);
+      doc.text("Summary:", 20, 65);
+      
+      doc.setFontSize(12);
+      doc.text(`1. Total Revenue: ${rev}`, 30, 80);
+      doc.text(`2. Loyalty Customers Registered: ${cust}`, 30, 95);
+      doc.text(`3. Total Loyalty Points Given: ${pts}`, 30, 110);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text("Powered by Mapa Solutions - Social Map System", 20, 280);
+      
+      // Save the PDF
+      doc.save(`Report_${shopName.replace(/\s+/g, '_')}_${new Date().getTime()}.pdf`);
     }
 
-    function addProductClient() {
-      const name = document.getElementById('new_p_name').value; const price = document.getElementById('new_p_price').value; const type = document.getElementById('new_p_type').value;
-      if(!name || !price) { alert("Please fill in all details."); return; }
-      fetch(APPS_SCRIPT_URL, {method:"POST", body:JSON.stringify({action:"addProduct", shopId:localStorage.getItem('shopId'), type:type, name:name, price:price})}).then(res=>res.json()).then(d=>{ alert(d.message); document.getElementById('new_p_name').value = ""; document.getElementById('new_p_price').value = ""; fetchProducts(); });
-    }
-
-    function fetchFeedback() {
-      fetch(`${APPS_SCRIPT_URL}?action=getFeedback&shopId=${localStorage.getItem('shopId')}`).then(res => res.json()).then(data => {
-          const list = document.getElementById('feedbackList'); list.innerHTML = "";
-          if(data.success && data.data.length > 0) {
-            data.data.reverse().forEach(f => {
-              let imgHtml = (f.ImageURL && f.ImageURL !== "No Image" && f.ImageURL !== "Image Upload Error") ? `<br><a href="${f.ImageURL}" target="_blank" style="color:#1976d2; font-size:13px; font-weight:bold; text-decoration:none;"><i class="fas fa-image"></i> 🖼️ View Uploaded Photo</a>` : '';
-              let dateStr = new Date(f.Date).toLocaleDateString();
-              list.innerHTML += `<div style="background: #fafafa; border: 1px solid #ddd; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: left;">
-                  <div style="font-size:12px; color:gray;">📅 ${dateStr}</div>
-                  <div style="font-weight:bold; color:#333; margin:5px 0;">👤 ${f.CustomerName || 'Anonymous'} <span style="font-weight:normal; color:#555;">(${f.Phone || '-'})</span></div>
-                  <div style="color:#444; font-size:14px; background:#eef2f5; padding:10px; border-radius:5px;">💬 ${f.Message}</div>
-                  ${imgHtml}
-                </div>`;
-            });
-          } else { list.innerHTML = "<p style='color:gray;'>No feedback or suggestions received yet.</p>"; }
-        });
-    }
   </script>
 </body>
 </html>
