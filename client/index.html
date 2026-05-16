@@ -154,7 +154,11 @@
   </div>
 
   <script>
+    // ########################################################
+    // ඔබගේ අලුත් WEB APP URL එක මෙතැනට ඇතුළත් කරන්න
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyBKJVfmAroLt9amqeVbKuBXtn6hY-bd_SMGaqBYE2klD_OkjAleHDqSnI4wRExVZg/exec";
+    // ########################################################
+
     let orderInterval;
     let currentOrdersData = [];
     let activeCheckoutOrder = null;
@@ -230,7 +234,7 @@
       });
     }
 
-    // --- LOAD PRODUCTS (STORE) ---
+    // --- LOAD PRODUCTS WITH IMAGES (STORE) ---
     function loadStoreItems() {
       const shopId = sessionStorage.getItem('clientShopId');
       document.getElementById('storeArea').innerHTML = "<p>Loading products...</p>";
@@ -242,10 +246,24 @@
              let pName = p.ProductName || p['Product Name'] || "නම නැත";
              let pPrice = p.Price || p['Product Price'] || 0;
              let pId = p.ProductID || p['Product ID'] || "-";
+             
+             // Extract images securely
+             let img1 = p.Image1 || p.img1;
+             let img2 = p.Image2 || p.img2;
+             let img3 = p.Image3 || p.img3;
+             
+             let imgsHtml = "";
+             if(img1) imgsHtml += `<img src="${img1}" style="width:50px; height:50px; object-fit:cover; border-radius:5px; border:1px solid #ddd;" onerror="this.style.display='none'">`;
+             if(img2) imgsHtml += `<img src="${img2}" style="width:50px; height:50px; object-fit:cover; border-radius:5px; border:1px solid #ddd;" onerror="this.style.display='none'">`;
+             if(img3) imgsHtml += `<img src="${img3}" style="width:50px; height:50px; object-fit:cover; border-radius:5px; border:1px solid #ddd;" onerror="this.style.display='none'">`;
+             
+             let imgContainer = imgsHtml ? `<div style="display:flex; gap:5px; margin-top:8px;">${imgsHtml}</div>` : "";
+
              html += `<div style="background:#f9f9f9; padding:12px; margin-bottom:10px; border-radius:8px; border-left:4px solid #1976d2; display:flex; justify-content:space-between; align-items:center;">
                         <div>
                            <strong style="font-size:16px;">${pName}</strong><br>
                            <span style="font-size:12px; color:gray;">Item ID: ${pId}</span>
+                           ${imgContainer}
                         </div>
                         <div style="font-weight:bold; color:#d32f2f;">රු. ${pPrice}</div>
                       </div>`;
