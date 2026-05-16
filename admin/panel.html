@@ -25,10 +25,10 @@
 
     /* QR Generator Styles */
     .qr-box { background: #e3f2fd; padding: 20px; border-radius: 10px; border: 2px dashed #1976d2; text-align: center;}
-    .qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; }
-    .qr-card { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
-    .qr-card img { width: 100%; border-radius: 5px; }
-    .btn-download { background: #ff9800; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 5px; font-weight: bold; }
+    .qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-top: 20px; }
+    .qr-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center; }
+    .qr-card img { width: 100%; border-radius: 5px; margin-bottom: 10px; }
+    .btn-download { background: #ff9800; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -56,7 +56,10 @@
               <input type="number" id="qr_tableCount" value="5" min="1">
             </div>
           </div>
-          <button class="btn-save" style="background:#1976d2; width:auto; padding:10px 30px;" onclick="generateTableQRs()">Generate QRs</button>
+          <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+            <button class="btn-save" style="background:#1976d2; width:auto; padding:10px 30px; margin:0;" onclick="generateTableQRs()">Generate Table QRs</button>
+            <button class="btn-save" style="background:#d32f2f; width:auto; padding:10px 30px; margin:0;" onclick="generateMainQR()">Generate MAIN QR</button>
+          </div>
        </div>
        <div id="qrResults" class="qr-grid"></div>
     </div>
@@ -162,7 +165,6 @@
       const resultsDiv = document.getElementById('qrResults');
       
       if(!baseUrl || !shopId || isNaN(count)) { alert("කරුණාකර URL එක, Shop ID එක සහ මේස ගණන ලබා දෙන්න."); return; }
-      
       resultsDiv.innerHTML = "";
       
       for(let i = 1; i <= count; i++) {
@@ -176,11 +178,34 @@
             <strong style="color:#1976d2; display:block; margin-bottom:5px; font-size:16px;">Table ${tableNo}</strong>
             <img src="${qrImgSrc}" alt="QR Table ${tableNo}">
             <a href="${qrImgSrc}" download="Shop_${shopId}_Table_${tableNo}_QR.png" target="_blank">
-              <button class="btn-download">Download HQ QR</button>
+              <button class="btn-download">Download QR</button>
             </a>
           </div>
         `;
       }
+    }
+
+    function generateMainQR() {
+      const baseUrl = document.getElementById('qr_baseUrl').value.trim();
+      const shopId = document.getElementById('qr_shopId').value.trim();
+      const resultsDiv = document.getElementById('qrResults');
+      
+      if(!baseUrl || !shopId) { alert("කරුණාකර URL එක සහ Shop ID එක ලබා දෙන්න."); return; }
+      
+      resultsDiv.innerHTML = ""; // Clear existing
+      let qrUrl = `${baseUrl}?id=${shopId}`;
+      let encodedUrl = encodeURIComponent(qrUrl);
+      let qrImgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodedUrl}&margin=10`;
+      
+      resultsDiv.innerHTML = `
+        <div class="qr-card" style="border: 2px solid #d32f2f;">
+          <strong style="color:#d32f2f; display:block; margin-bottom:5px; font-size:16px;">MAIN QR (Takeaway/General)</strong>
+          <img src="${qrImgSrc}" alt="Main QR">
+          <a href="${qrImgSrc}" download="Shop_${shopId}_MAIN_QR.png" target="_blank">
+            <button class="btn-download" style="background:#d32f2f;">Download MAIN QR</button>
+          </a>
+        </div>
+      `;
     }
 
     // --- CUSTOMER MANAGEMENT LOGIC ---
@@ -201,7 +226,7 @@
           tbody.innerHTML += `<tr><td>${c.ID}</td><td style="font-weight:bold; color:#333;">${c.BusinessName}</td><td>${appBadge}</td><td>${lBadge}</td>
             <td style="min-width: 140px;">
               <button class="btn-edit" onclick="editCust('${safeStr(c.ID)}','${safeStr(c.BusinessName)}','${safeStr(c.Type)}','${safeStr(c.WhatsApp)}','${safeStr(c.Maps)}','${safeStr(c.Facebook)}','${safeStr(c.Instagram)}','${safeStr(c.TikTok)}','${safeStr(c.Website)}','${safeStr(c.Email)}','${safeStr(c.MenuPDF)}','${safeStr(c.ThemeColor)}','${safeStr(c.Status)}','${safeStr(c.LoyaltyStatus)}','${safeStr(c.StampTarget)}','${safeStr(c.ClientPhone)}','${safeStr(c.Password)}','${safeStr(c.BankDetails)}','${safeStr(c.GoogleReview)}','${safeStr(c.ProfileImage)}','${safeStr(c.CoverImage)}','${safeStr(c.StoreStatus)}','${safeStr(c.InboxStatus)}','${safeExp}')">Select</button>
-              <button class="btn-edit" style="background:#d32f2f; margin-left:5px;" onclick="deleteCustomer('${safeStr(c.ID)}')"><i class="fas fa-trash"></i> Delete</button>
+              <button class="btn-edit" style="background:#d32f2f; margin-left:5px;" onclick="deleteCustomer('${safeStr(c.ID)}')"><i class="fas fa-trash"></i></button>
             </td></tr>`;
         });
       });
