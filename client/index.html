@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    /* පෙර තිබූ සියලුම style අඩංගු කර ඇත */
     body { font-family: 'Segoe UI', sans-serif; background: #eef2f5; margin: 0; padding: 0; }
     .container { max-width: 900px; margin: 0 auto; padding: 20px; }
     
@@ -19,7 +18,6 @@
     .header { background: #fff; padding: 15px 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     .header h2 { margin: 0; color: #d32f2f; }
     
-    /* Scrollable Tabs */
     .tabs-wrapper { overflow-x: auto; white-space: nowrap; margin-bottom: 20px; padding-bottom: 5px;}
     .tabs { display: inline-flex; gap: 10px; }
     .tab-btn { padding: 12px 20px; border: none; background: white; color: #555; font-weight: bold; border-radius: 10px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-bottom: 4px solid transparent; }
@@ -31,13 +29,11 @@
     .stat-card { background: #fafafa; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #eee; }
     .stat-card h3 { margin: 0; font-size: 24px; color: #d32f2f; }
     
-    /* KOT Orders */
     .orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
     .order-card { background: #fff8e1; border-left: 5px solid #ff9800; padding: 15px; border-radius: 8px; }
     
     .msg { padding: 10px; border-radius: 5px; margin-top: 10px; display: none; font-weight: bold; text-align: center; }
 
-    /* Checkout Modal */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 1000; }
     .modal-content { background: white; width: 90%; max-width: 500px; border-radius: 15px; padding: 20px; max-height: 90vh; overflow-y: auto; }
     .bill-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
@@ -97,12 +93,13 @@
 
     <div id="store" class="tab-content">
       <h3 style="margin-top:0;">Manage Store Products</h3>
-      <p style="color:gray; font-size:13px;">මෙම කොටසින් ඔබට ඔබගේ භාණ්ඩ වල මිල වෙනස් කිරීම් (Price updates) කළ හැක.</p>
+      <p style="color:gray; font-size:13px;">ඔබගේ භාණ්ඩ වල මිල ගණන් සහ විස්තර මෙහි දැක්වේ.</p>
       <div id="storeArea">Loading store items...</div>
     </div>
 
     <div id="inbox" class="tab-content">
       <h3 style="margin-top:0;">Customer Feedbacks</h3>
+      <p style="color:gray; font-size:13px;">පාරිභෝගිකයින්ගෙන් ලැබුණු අදහස් සහ යෝජනා.</p>
       <div id="feedbackArea">Loading messages...</div>
     </div>
 
@@ -233,6 +230,63 @@
       });
     }
 
+    // --- LOAD PRODUCTS (STORE) ---
+    function loadStoreItems() {
+      const shopId = sessionStorage.getItem('clientShopId');
+      document.getElementById('storeArea').innerHTML = "<p>Loading products...</p>";
+      fetch(`${APPS_SCRIPT_URL}?action=getProducts&shopId=${shopId}`)
+      .then(res=>res.json()).then(d=>{
+        if(d.success && d.data.length > 0) {
+          let html = "";
+          d.data.forEach(p => {
+             let pName = p.ProductName || p['Product Name'] || "නම නැත";
+             let pPrice = p.Price || p['Product Price'] || 0;
+             let pId = p.ProductID || p['Product ID'] || "-";
+             html += `<div style="background:#f9f9f9; padding:12px; margin-bottom:10px; border-radius:8px; border-left:4px solid #1976d2; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                           <strong style="font-size:16px;">${pName}</strong><br>
+                           <span style="font-size:12px; color:gray;">Item ID: ${pId}</span>
+                        </div>
+                        <div style="font-weight:bold; color:#d32f2f;">රු. ${pPrice}</div>
+                      </div>`;
+          });
+          document.getElementById('storeArea').innerHTML = html;
+        } else {
+          document.getElementById('storeArea').innerHTML = "<p>කිසිම භාණ්ඩයක් ඇතුළත් කර නැත.</p>";
+        }
+      }).catch(err => {
+         document.getElementById('storeArea').innerHTML = "<p style='color:red;'>Network Error while loading products.</p>";
+      });
+    }
+
+    // --- LOAD FEEDBACKS (INBOX) ---
+    function loadFeedbacks() {
+      const shopId = sessionStorage.getItem('clientShopId');
+      document.getElementById('feedbackArea').innerHTML = "<p>Loading feedbacks...</p>";
+      fetch(`${APPS_SCRIPT_URL}?action=getFeedback&shopId=${shopId}`)
+      .then(res=>res.json()).then(d=>{
+        if(d.success && d.data.length > 0) {
+          let html = "";
+          d.data.forEach(f => {
+             let dateStr = new Date(f.Date).toLocaleString();
+             let imgLink = (f.ImageURL && f.ImageURL !== "No Image" && f.ImageURL !== "Image Upload Error") ? `<br><a href="${f.ImageURL}" target="_blank" style="color:#1976d2; font-size:12px;"><i class="fas fa-image"></i> View Attached Image</a>` : "";
+             
+             html += `<div style="background:#fff; padding:15px; margin-bottom:12px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.05); border-left:4px solid #ff9800;">
+                        <div style="font-size:12px; color:gray; margin-bottom:5px;">${dateStr}</div>
+                        <strong>👤 ${f.CustomerName || 'Anonymous'}</strong> (${f.Phone || 'No Phone'})<br>
+                        <div style="margin-top:8px; color:#333; background:#f4f6f8; padding:10px; border-radius:5px;">${f.Message}</div>
+                        ${imgLink}
+                      </div>`;
+          });
+          document.getElementById('feedbackArea').innerHTML = html;
+        } else {
+          document.getElementById('feedbackArea').innerHTML = "<p>පාරිභෝගික අදහස් කිසිවක් ලැබී නැත.</p>";
+        }
+      }).catch(err => {
+         document.getElementById('feedbackArea').innerHTML = "<p style='color:red;'>Network Error while loading feedbacks.</p>";
+      });
+    }
+
     // --- POS & KOT LOGIC ---
     function fetchOrders() {
       const shopId = sessionStorage.getItem('clientShopId');
@@ -357,8 +411,6 @@
       doc.save(`Report_${new Date().getTime()}.pdf`);
     }
 
-    function loadStoreItems() { document.getElementById('storeArea').innerHTML = "<p>Store module is active. (Products load here)</p>"; /* Place existing fetch logic here */ }
-    function loadFeedbacks() { document.getElementById('feedbackArea').innerHTML = "<p>Inbox module is active. (Feedbacks load here)</p>"; /* Place existing fetch logic here */ }
   </script>
 </body>
 </html>
