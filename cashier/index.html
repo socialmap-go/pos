@@ -1,184 +1,415 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="si">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cashier Portal | Social Map</title>
+  <title>POS & Cashier Portal | Social Map</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #eef2f5; margin: 0; padding: 0; display: flex; justify-content: center; min-height: 100vh; align-items: center;}
-    .container { width: 100%; max-width: 400px; margin: 20px; padding: 25px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; box-sizing: border-box;}
-    input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; text-align: center; }
-    .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 10px; color: white; transition: 0.2s;}
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2f5; margin: 0; padding: 0; }
+    .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    
+    /* Login Screen */
+    .login-box { max-width: 400px; margin: 50px auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; }
+    input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+    .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; transition: 0.2s; color: white; width: 100%; }
+    .btn-primary { background: #e65100; } .btn-success { background: #2e7d32; } .btn-info { background: #1976d2; } .btn-danger { background: #d32f2f; }
     .btn:active { transform: scale(0.98); }
     
-    .input-label { text-align: left; font-size: 13px; font-weight: bold; color: #555; display: block; margin-top: 10px;}
-    .msg { padding: 15px; border-radius: 8px; font-weight: bold; display: none; margin-top: 10px; font-size: 14px;}
+    /* Header & Tabs */
+    .header { background: #fff; padding: 15px 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .header h2 { margin: 0; color: #e65100; font-size: 22px; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab-btn { flex: 1; padding: 15px; border: none; background: #fff; color: #555; font-weight: bold; border-radius: 10px; cursor: pointer; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-bottom: 4px solid transparent; }
+    .tab-btn.active { color: #e65100; border-bottom: 4px solid #e65100; }
+    .tab-content { display: none; } .tab-content.active { display: block; }
+
+    /* Orders Grid */
+    .orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
+    .order-card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 5px solid #ff9800; }
+    .order-header { display: flex; justify-content: space-between; border-bottom: 1px dashed #ccc; padding-bottom: 10px; margin-bottom: 10px; }
+    .status-badge { padding: 4px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; color: white; }
+    .s-Pending { background: #d32f2f; } .s-Preparing { background: #ff9800; } .s-Ready { background: #388e3c; }
+
+    /* Checkout Modal */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content { background: white; width: 90%; max-width: 500px; border-radius: 15px; padding: 20px; max-height: 90vh; overflow-y: auto; }
+    .bill-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+    .bill-total { font-size: 20px; font-weight: bold; color: #d32f2f; display: flex; justify-content: space-between; margin-top: 15px; border-top: 2px solid #333; padding-top: 10px; }
+
+    .msg { padding: 10px; border-radius: 5px; display: none; margin-top: 10px; font-weight: bold; text-align: center; font-size: 14px; }
     
-    .header-box { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom: 15px; border-bottom: 2px dashed #eee;}
+    /* Print Area (Hidden normally, shown only on print) */
+    @media print {
+      body * { visibility: hidden; }
+      #printArea, #printArea * { visibility: visible; }
+      #printArea { position: absolute; left: 0; top: 0; width: 300px; padding: 10px; font-family: monospace; font-size: 12px; }
+    }
   </style>
 </head>
 <body>
 
-  <!-- CASHIER LOGIN SYSTEM -->
   <div class="container" id="loginBox">
-    <div style="background: #e65100; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; margin: 0 auto 15px auto;">
-      <i class="fas fa-cash-register"></i>
+    <div class="login-box">
+      <div style="background: #e65100; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; margin: 0 auto 15px auto;"><i class="fas fa-cash-register"></i></div>
+      <h2 style="margin-top: 0; color: #333;">Cashier POS Login</h2>
+      <input type="tel" id="uPhone" placeholder="Shop Phone Number">
+      <input type="password" id="uPass" placeholder="Password">
+      <button class="btn btn-primary" style="margin-top: 10px;" onclick="login()">Login to POS</button>
+      <div id="loginMsg" class="msg"></div>
     </div>
-    <h2 style="margin-top: 0; color: #333;">Cashier Login</h2>
-    <p style="color:#777; font-size:14px; margin-bottom: 20px;">Secure Access for Shop Staff</p>
-    
-    <input type="tel" id="uPhone" placeholder="Shop Phone Number">
-    <input type="password" id="uPass" placeholder="Password">
-    
-    <button class="btn" style="background:#e65100; margin-top: 10px;" onclick="login()">Login to Cashier</button>
-    <p id="loginMsg" style="color:red; font-size:13px; display:none;"></p>
   </div>
 
-  <!-- MAIN CASHIER PORTAL -->
   <div class="container" id="mainApp" style="display: none;">
-    
-    <div class="header-box">
-      <div style="text-align:left;">
-        <h3 id="shopName" style="margin:0; color:#e65100;">Shop Name</h3>
-        <p style="margin:0; font-size:12px; color:gray;" id="shopIdDisplay">Cashier Mode</p>
+    <div class="header">
+      <div>
+        <h2 id="shopName">Shop Name</h2>
+        <span style="font-size: 13px; color: gray;">POS & KOT System</span>
       </div>
-      <button onclick="logout()" style="background:#f4f6f8; border:1px solid #ddd; padding:8px 15px; border-radius:8px; color:#555; font-weight:bold; cursor:pointer;">Logout</button>
+      <button class="btn" style="width: auto; background: #eee; color: #333; padding: 8px 15px;" onclick="logout()">Logout</button>
     </div>
 
-    <!-- Loyalty Management UI -->
-    <div style="background: #fff3e0; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #ffe0b2;">
-      <span class="input-label" style="color:#e65100;">Customer Phone Number</span>
-      <div style="display:flex; gap:10px; margin-bottom:10px;">
-        <input type="tel" id="cPhone" placeholder="07XXXXXXXX" maxlength="10" style="margin:0; flex:1;">
-        <button class="btn" style="background:#1976d2; margin:0; width:auto; padding:0 20px;" onclick="checkCustomerLoyalty()"><i class="fas fa-search"></i></button>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('kotTab')"><i class="fas fa-concierge-bell"></i> Live KOT</button>
+      <button class="tab-btn" onclick="switchTab('manualLoyaltyTab')"><i class="fas fa-stamp"></i> Manual Loyalty</button>
+    </div>
+
+    <div id="kotTab" class="tab-content active">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3 style="margin: 0;">Kitchen Orders <span id="orderCount" style="background:#d32f2f; color:white; padding:2px 8px; border-radius:10px; font-size:14px;">0</span></h3>
+        <span style="font-size: 12px; color: #2e7d32; font-weight: bold;"><i class="fas fa-sync fa-spin"></i> Live Refreshing (30s)</span>
       </div>
       
-      <span class="input-label" style="color:#e65100;">Number of Stamps to Give</span>
-      <input type="number" id="cStampCount" value="1" min="1" style="background: white;">
+      <div class="orders-grid" id="ordersContainer">
+        <p style="text-align: center; color: gray; grid-column: 1 / -1;">Loading Orders...</p>
+      </div>
     </div>
 
-    <button class="btn" style="background:#2e7d32;" onclick="processAction('loyaltyAddStamp')"><i class="fas fa-stamp"></i> Add Stamps</button>
-    <button class="btn" style="background:#ff9800;" onclick="processAction('loyaltyRedeem')"><i class="fas fa-gift"></i> Redeem Reward</button>
-    <button class="btn" style="background:#757575;" onclick="processAction('loyaltyCashierReset')"><i class="fas fa-undo"></i> Reset User PIN</button>
-    
-    <div id="actionMsg" class="msg"></div>
-
+    <div id="manualLoyaltyTab" class="tab-content">
+      <div style="background: white; padding: 20px; border-radius: 10px; max-width: 500px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+        <h3 style="margin-top: 0; color: #e65100;">Manual Points Allocation</h3>
+        <p style="font-size: 13px; color: gray;">For orders not processed through the POS.</p>
+        
+        <label style="font-size: 13px; font-weight: bold;">Customer Phone</label>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+          <input type="tel" id="cPhone" placeholder="07XXXXXXXX" maxlength="10" style="margin:0; flex:1;">
+          <button class="btn btn-info" style="margin:0; width:auto; padding:0 20px;" onclick="checkCustomerLoyalty()"><i class="fas fa-search"></i></button>
+        </div>
+        
+        <label style="font-size: 13px; font-weight: bold;">Points / Stamps to Give</label>
+        <input type="number" id="cStampCount" value="1" min="0.1" step="0.1" style="margin-bottom: 15px;">
+        
+        <button class="btn btn-success" style="margin-bottom: 10px;" onclick="processLoyaltyAction('loyaltyAddStamp')"><i class="fas fa-plus-circle"></i> Add Points</button>
+        <button class="btn" style="background:#ff9800; margin-bottom: 10px;" onclick="processLoyaltyAction('loyaltyRedeem')"><i class="fas fa-gift"></i> Redeem Reward</button>
+        <button class="btn" style="background:#757575;" onclick="processLoyaltyAction('loyaltyCashierReset')"><i class="fas fa-undo"></i> Reset User PIN</button>
+        
+        <div id="actionMsg" class="msg"></div>
+      </div>
+    </div>
   </div>
+
+  <div class="modal" id="checkoutModal">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+        <h3 style="margin: 0; color: #1976d2;">POS Checkout</h3>
+        <button style="background:none; border:none; font-size:20px; cursor:pointer;" onclick="closeModal()">✖</button>
+      </div>
+      
+      <div style="font-size: 14px; margin-bottom: 15px; color: #555;">
+        <strong>Order:</strong> <span id="co_orderId"></span> | <strong>Table:</strong> <span id="co_table"></span><br>
+        <strong>Customer:</strong> <span id="co_customer"></span>
+      </div>
+
+      <div style="background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 15px; max-height: 150px; overflow-y: auto;" id="co_itemsList">
+        </div>
+
+      <div style="display: flex; gap: 5px; margin-bottom: 15px;">
+        <input type="text" id="co_extraName" placeholder="අමතර අයිතමය (Extra Item)" style="margin:0; flex: 2; padding: 8px;">
+        <input type="number" id="co_extraPrice" placeholder="මිල (Rs)" style="margin:0; flex: 1; padding: 8px;">
+        <button class="btn btn-success" style="margin:0; width:auto; padding:8px 15px;" onclick="addExtraItem()"><i class="fas fa-plus"></i></button>
+      </div>
+
+      <div class="bill-row">
+        <span>Sub Total:</span>
+        <strong>රු. <span id="co_subTotal">0.00</span></strong>
+      </div>
+      <div class="bill-row" style="align-items: center;">
+        <span>Service Charge / Tax (Rs):</span>
+        <input type="number" id="co_serviceCharge" value="0" style="width: 80px; padding: 5px; margin: 0; text-align: right;" onkeyup="calculateGrandTotal()">
+      </div>
+      
+      <div class="bill-total">
+        <span>Grand Total:</span>
+        <span>රු. <span id="co_grandTotal">0.00</span></span>
+      </div>
+
+      <div style="margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px;">
+        <label style="font-size: 13px; font-weight: bold; color: #e65100;">Loyalty Phone Number (Optional)</label>
+        <p style="font-size: 11px; color: gray; margin: 2px 0 8px 0;">Points ස්වයංක්‍රීයව ලබාදීමට පාරිභෝගිකයාගේ අංකය ඇතුළත් කරන්න.</p>
+        <input type="tel" id="co_phone" placeholder="07XXXXXXXX" maxlength="10">
+      </div>
+
+      <button class="btn btn-primary" style="margin-top: 15px; font-size: 18px;" onclick="processCheckout()"><i class="fas fa-check-circle"></i> Complete Payment & Print</button>
+      <div id="checkoutMsg" class="msg"></div>
+    </div>
+  </div>
+
+  <div id="printArea"></div>
 
   <script>
     // WEB APP URL HERE
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzU8NQF6m62kbDwCr6ol48LEVl8-veggT_bR5Lue7sIrJWlgpiI7GzosU_PqZzzV0JP/exec";
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcHuHqBTZbgujvCdEoXOp8FyCWFzTyWB2Sjkwa39z4JQ2lx2dD7XsisJ_BucdPf0c/exec";
+    let orderInterval;
+    let currentOrdersData = [];
+    let activeCheckoutOrder = null;
+
+    function showMsg(id, text, isError) {
+      const m = document.getElementById(id);
+      m.innerText = text; m.style.display = "block";
+      m.style.background = isError ? "#ffebee" : "#e8f5e9";
+      m.style.color = isError ? "#c62828" : "#2e7d32";
+      setTimeout(() => m.style.display = "none", 4000);
+    }
 
     function login() {
       const phone = document.getElementById('uPhone').value; 
       const pass = document.getElementById('uPass').value;
-      const msg = document.getElementById('loginMsg');
+      if (!phone || !pass) { showMsg('loginMsg', 'කරුණාකර සියලු විස්තර ඇතුළත් කරන්න.', true); return; }
       
-      msg.style.display = "none"; 
       document.querySelector('#loginBox .btn').innerText = "Verifying...";
-      
       fetch(`${APPS_SCRIPT_URL}?action=clientLogin&phone=${phone}&password=${pass}`)
         .then(res => res.json())
         .then(data => {
-          document.querySelector('#loginBox .btn').innerText = "Login to Cashier";
+          document.querySelector('#loginBox .btn').innerText = "Login to POS";
           if(data.success) { 
-            if(data.isExpired) {
-               msg.innerText = "Your shop subscription has expired.";
-               msg.style.display = "block";
-               return;
-            }
-            if(data.loyaltyStatus === 'Inactive') {
-               msg.innerText = "Loyalty System is disabled for your shop.";
-               msg.style.display = "block";
-               return;
-            }
-            // Save temporary cashier session
+            if(data.isExpired) { showMsg('loginMsg', "Your shop subscription has expired.", true); return; }
             sessionStorage.setItem('cashierShopId', data.shopId); 
             sessionStorage.setItem('cashierShopName', data.businessName); 
             initApp(); 
-          } 
-          else { 
-            msg.innerText = data.error || "Invalid Credentials"; 
-            msg.style.display = "block"; 
-          }
+          } else { showMsg('loginMsg', data.error || "Invalid Credentials", true); }
         }).catch(err => { 
-          document.querySelector('#loginBox .btn').innerText = "Login to Cashier"; 
-          alert("Network Error!"); 
+          document.querySelector('#loginBox .btn').innerText = "Login to POS"; 
+          showMsg('loginMsg', "Network Error!", true); 
         });
     }
 
-    function logout() { 
-      sessionStorage.clear(); 
-      location.reload(); 
+    function logout() { sessionStorage.clear(); clearInterval(orderInterval); location.reload(); }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.currentTarget.classList.add('active');
+      if(tabId === 'kotTab') fetchOrders();
     }
 
     function initApp() {
       document.getElementById('loginBox').style.display = 'none'; 
       document.getElementById('mainApp').style.display = 'block';
       document.getElementById('shopName').innerText = sessionStorage.getItem('cashierShopName'); 
+      fetchOrders();
+      orderInterval = setInterval(fetchOrders, 30000); // 30s auto-refresh
     }
 
-    // Auto-login check if already verified in this session
-    if(sessionStorage.getItem('cashierShopId')) {
-      initApp();
+    if(sessionStorage.getItem('cashierShopId')) { initApp(); }
+
+    // --- KOT & POS LOGIC ---
+
+    function fetchOrders() {
+      const shopId = sessionStorage.getItem('cashierShopId');
+      fetch(`${APPS_SCRIPT_URL}?action=getOrders&shopId=${shopId}`)
+        .then(res => res.json())
+        .then(data => {
+          const container = document.getElementById('ordersContainer');
+          if (data.success) {
+            currentOrdersData = data.data; // Save to global state
+            document.getElementById('orderCount').innerText = currentOrdersData.length;
+            
+            if (currentOrdersData.length === 0) {
+              container.innerHTML = "<p style='text-align:center; color:gray; grid-column:1/-1;'>No active orders.</p>";
+              return;
+            }
+            
+            container.innerHTML = "";
+            currentOrdersData.forEach((o, index) => {
+              let sClass = o.Status === 'Pending' ? 's-Pending' : (o.Status === 'Preparing' ? 's-Preparing' : 's-Ready');
+              
+              let itemsText = "";
+              try { let obj = JSON.parse(o.Items); for(let k in obj) itemsText += `${k} (x${obj[k]}), `; } catch(e) { itemsText = o.Items; }
+              if(itemsText.length > 50) itemsText = itemsText.substring(0, 50) + "...";
+
+              container.innerHTML += `
+                <div class="order-card">
+                  <div class="order-header">
+                    <strong style="font-size:18px;">Table: ${o.TableNo}</strong>
+                    <span class="status-badge ${sClass}">${o.Status}</span>
+                  </div>
+                  <div style="font-size:13px; color:#555; margin-bottom:15px; height: 40px; overflow: hidden;">
+                    <strong>ID:</strong> ${o.OrderID} <br>
+                    <strong>Items:</strong> ${itemsText}
+                  </div>
+                  <div style="display:flex; justify-content:space-between; gap:5px;">
+                    <select onchange="updateStatus('${o.OrderID}', this.value)" style="padding:8px; border-radius:5px; border:1px solid #ccc; flex:1; font-weight:bold;">
+                      <option value="Pending" ${o.Status==='Pending'?'selected':''}>Pending</option>
+                      <option value="Preparing" ${o.Status==='Preparing'?'selected':''}>Preparing</option>
+                      <option value="Ready" ${o.Status==='Ready'?'selected':''}>Ready</option>
+                    </select>
+                    <button class="btn btn-success" style="padding:8px 15px; flex:1;" onclick="openCheckout(${index})"><i class="fas fa-cash-register"></i> Pay</button>
+                  </div>
+                </div>`;
+            });
+          }
+        }).catch(err => console.log("Auto-refresh error"));
     }
 
+    function updateStatus(orderId, newStatus) {
+      const shopId = sessionStorage.getItem('cashierShopId');
+      fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "updateOrderStatus", shopId: shopId, orderId: orderId, status: newStatus })
+      }).then(res=>res.json()).then(d => { if(d.success) fetchOrders(); });
+    }
+
+    // --- CHECKOUT LOGIC ---
+    let checkoutItems = {};
+
+    function openCheckout(index) {
+      activeCheckoutOrder = currentOrdersData[index];
+      document.getElementById('co_orderId').innerText = activeCheckoutOrder.OrderID;
+      document.getElementById('co_table').innerText = activeCheckoutOrder.TableNo;
+      document.getElementById('co_customer').innerText = activeCheckoutOrder.CustomerName;
+      document.getElementById('co_phone').value = activeCheckoutOrder.Phone || "";
+      document.getElementById('co_serviceCharge').value = 0;
+      
+      // Load Items
+      try { checkoutItems = JSON.parse(activeCheckoutOrder.Items); } 
+      catch(e) { checkoutItems = { "Custom Order": 1 }; }
+      
+      renderCheckoutItems();
+      document.getElementById('checkoutModal').style.display = 'flex';
+    }
+
+    function closeModal() { document.getElementById('checkoutModal').style.display = 'none'; }
+
+    function renderCheckoutItems() {
+      let html = "";
+      for(let key in checkoutItems) { html += `<div style="border-bottom:1px solid #ddd; padding:5px 0; font-size:13px;">• ${key} (x${checkoutItems[key]})</div>`; }
+      document.getElementById('co_itemsList').innerHTML = html;
+      calculateGrandTotal();
+    }
+
+    function addExtraItem() {
+      const name = document.getElementById('co_extraName').value;
+      const price = parseFloat(document.getElementById('co_extraPrice').value);
+      if(!name || isNaN(price)) return;
+      
+      checkoutItems[`${name} (Extra)`] = 1;
+      activeCheckoutOrder.TotalAmount = parseFloat(activeCheckoutOrder.TotalAmount) + price;
+      
+      document.getElementById('co_extraName').value = "";
+      document.getElementById('co_extraPrice').value = "";
+      renderCheckoutItems();
+    }
+
+    function calculateGrandTotal() {
+      let subTotal = parseFloat(activeCheckoutOrder.TotalAmount) || 0;
+      let serviceCharge = parseFloat(document.getElementById('co_serviceCharge').value) || 0;
+      let grandTotal = subTotal + serviceCharge;
+      
+      document.getElementById('co_subTotal').innerText = subTotal.toFixed(2);
+      document.getElementById('co_grandTotal').innerText = grandTotal.toFixed(2);
+    }
+
+    function processCheckout() {
+      const shopId = sessionStorage.getItem('cashierShopId');
+      const phone = document.getElementById('co_phone').value;
+      const sub = parseFloat(document.getElementById('co_subTotal').innerText);
+      const sc = parseFloat(document.getElementById('co_serviceCharge').value) || 0;
+      const gt = parseFloat(document.getElementById('co_grandTotal').innerText);
+
+      document.querySelector('#checkoutModal .btn-primary').innerText = "Processing...";
+
+      fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ 
+          action: "completeOrder", shopId: shopId, orderId: activeCheckoutOrder.OrderID, 
+          subTotal: sub, serviceCharge: sc, grandTotal: gt, phone: phone 
+        })
+      }).then(res=>res.json()).then(data => {
+        if(data.success) {
+          document.querySelector('#checkoutModal .btn-primary').innerText = "Complete Payment & Print";
+          alert(data.message); // Shows points added
+          closeModal();
+          printReceipt(data.invoiceNo, gt, sc);
+          fetchOrders();
+        } else {
+          document.querySelector('#checkoutModal .btn-primary').innerText = "Complete Payment & Print";
+          showMsg('checkoutMsg', data.error, true);
+        }
+      }).catch(err => {
+        document.querySelector('#checkoutModal .btn-primary').innerText = "Complete Payment & Print";
+        showMsg('checkoutMsg', "Network Error", true);
+      });
+    }
+
+    function printReceipt(invNo, gt, sc) {
+      let shopName = sessionStorage.getItem('cashierShopName');
+      let itemsHtml = "";
+      for(let key in checkoutItems) { itemsHtml += `<div>${key} x${checkoutItems[key]}</div>`; }
+      
+      let html = `
+        <div style="text-align:center; font-weight:bold; font-size:16px; border-bottom:1px dashed #000; padding-bottom:10px; margin-bottom:10px;">
+          ${shopName}<br><span style="font-size:10px; font-weight:normal;">Payment Receipt</span>
+        </div>
+        <div style="margin-bottom:10px;">
+          Date: ${new Date().toLocaleString()}<br>
+          Inv No: ${invNo}<br>
+          Table: ${activeCheckoutOrder.TableNo}
+        </div>
+        <div style="border-bottom:1px dashed #000; padding-bottom:5px; margin-bottom:5px;">
+          ${itemsHtml}
+        </div>
+        <div style="text-align:right;">
+          Service Charge: Rs. ${sc.toFixed(2)}<br>
+          <strong style="font-size:14px;">Total: Rs. ${gt.toFixed(2)}</strong>
+        </div>
+        <div style="text-align:center; margin-top:20px; font-size:10px;">
+          Thank You! Come Again.<br>Powered by Social Map
+        </div>
+      `;
+      
+      document.getElementById('printArea').innerHTML = html;
+      window.print();
+    }
+
+    // --- MANUAL LOYALTY (OLD SYSTEM LOGIC) ---
     function checkCustomerLoyalty() {
       const shopId = sessionStorage.getItem('cashierShopId'); 
       const phone = document.getElementById('cPhone').value;
-      const msgBox = document.getElementById('actionMsg');
+      if(phone.length !== 10) { showMsg('actionMsg', "Please enter a valid 10-digit number.", true); return; }
       
-      if(phone.length !== 10) { showMsg('actionMsg', "Please enter a valid 10-digit number.", false); return; }
-      
-      msgBox.innerText = "Checking Database..."; 
-      msgBox.style.display="block"; msgBox.style.background="#e3f2fd"; msgBox.style.color="#1565c0";
-      
+      showMsg('actionMsg', "Checking Database...", false);
       fetch(`${APPS_SCRIPT_URL}?action=getCashierLoyalty&shopId=${shopId}&phone=${phone}`)
-        .then(res=>res.json())
-        .then(data => {
-          if(data.success) {
-             msgBox.innerHTML = `Current Stamps: <span style="font-size:20px; font-weight:bold; color:#d32f2f;">${data.stamps}</span> <br> Total Redeemed: <span style="font-size:18px; font-weight:bold; color:#2e7d32;">${data.redeemed}</span>`;
-          } else { 
-            showMsg('actionMsg', data.error || "Customer not found.", false); 
-          }
-      }).catch(err => showMsg('actionMsg', "Network Error", false));
+        .then(res=>res.json()).then(data => {
+          if(data.success) { document.getElementById('actionMsg').innerHTML = `Current Points: <strong>${data.stamps}</strong> | Redeemed: <strong>${data.redeemed}</strong>`; } 
+          else { showMsg('actionMsg', data.error || "Customer not found.", true); }
+      });
     }
 
-    function processAction(actionType) {
+    function processLoyaltyAction(actionType) {
       const shopId = sessionStorage.getItem('cashierShopId'); 
       const phone = document.getElementById('cPhone').value; 
       const count = document.getElementById('cStampCount').value; 
-      const msgBox = document.getElementById('actionMsg');
+      if(phone.length !== 10) { showMsg('actionMsg', "Please enter a valid 10-digit number.", true); return; }
       
-      if(phone.length !== 10) { showMsg('actionMsg', "Please enter a valid 10-digit number.", false); return; }
-      
-      msgBox.innerText = "Processing Please Wait..."; 
-      msgBox.style.display="block"; msgBox.style.background="#eee"; msgBox.style.color="black";
-      
-      fetch(APPS_SCRIPT_URL, { 
-        method: 'POST', 
-        body: JSON.stringify({ action: actionType, shopId: shopId, phone: phone, stampCount: count }) 
-      })
-      .then(res => res.json())
-      .then(data => { 
-        if(data.success) { 
-          showMsg('actionMsg', data.message, true); 
-          document.getElementById('cPhone').value = ""; 
-          document.getElementById('cStampCount').value = 1; 
-        } else { 
-          showMsg('actionMsg', data.error, false); 
-        } 
-      }).catch(err => showMsg('actionMsg', "Network Error!", false));
+      showMsg('actionMsg', "Processing...", false);
+      fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: actionType, shopId: shopId, phone: phone, stampCount: count }) })
+      .then(res => res.json()).then(data => { 
+        if(data.success) { showMsg('actionMsg', data.message, false); document.getElementById('cPhone').value = ""; } 
+        else { showMsg('actionMsg', data.error, true); } 
+      });
     }
 
-    function showMsg(id, text, success) { 
-      let m = document.getElementById(id); 
-      m.innerHTML = text; 
-      m.style.background = success ? "#d4edda" : "#f8d7da"; 
-      m.style.color = success ? "#155724" : "#721c24"; 
-      m.style.display = "block"; 
-    }
   </script>
 </body>
 </html>
