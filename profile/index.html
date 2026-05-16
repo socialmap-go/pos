@@ -14,7 +14,6 @@
     h1 { margin: 10px 0 5px 0; color: #333; font-size: 24px; }
     .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; margin-bottom: 20px; background: #e8f5e9; color: #2e7d32; }
     
-    /* Social Buttons */
     .links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 30px; }
     .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border-radius: 10px; text-decoration: none; color: white; font-weight: bold; transition: 0.2s; }
     .social-btn:active { transform: scale(0.95); }
@@ -23,7 +22,6 @@
     
     .section-title { font-size: 18px; color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; text-align: left; }
 
-    /* Products / e-Menu */
     .product-card { display: flex; gap: 15px; background: #fff; border: 1px solid #eee; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); text-align: left; align-items: center;}
     .product-imgs { display: flex; gap: 5px; }
     .product-imgs img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; }
@@ -32,12 +30,10 @@
     .product-price { color: #d32f2f; font-weight: bold; font-size: 15px; margin: 0; }
     .btn-add { background: #ff9800; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(255, 152, 0, 0.3); }
 
-    /* Floating Cart Button */
     .floating-cart { position: fixed; bottom: 20px; right: 20px; background: #d32f2f; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; box-shadow: 0 5px 15px rgba(211, 47, 47, 0.4); cursor: pointer; z-index: 100; transition: 0.3s; }
     .floating-cart:active { transform: scale(0.9); }
     .cart-badge { position: absolute; top: 0; right: 0; background: #ffeb3b; color: #333; font-size: 12px; font-weight: bold; width: 22px; height: 22px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid #d32f2f; }
 
-    /* Cart Modal */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: flex-end; }
     .modal-content { background: white; width: 100%; max-width: 600px; border-radius: 20px 20px 0 0; padding: 25px; box-sizing: border-box; max-height: 85vh; overflow-y: auto; animation: slideUp 0.3s ease-out; }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -49,8 +45,7 @@
 
     .btn-submit { background: #2e7d32; color: white; padding: 15px; border: none; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3); }
 
-    /* Loading Overlay */
-    #loadingScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    #loadingScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-sizing: border-box; }
     .spinner { border: 5px solid #f3f3f3; border-top: 5px solid #e65100; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
@@ -58,8 +53,8 @@
 <body>
 
   <div id="loadingScreen">
-    <div class="spinner"></div>
-    <h3 style="color: #555; margin-top: 20px;">Loading Profile...</h3>
+    <div class="spinner" id="mainSpinner"></div>
+    <h3 style="color: #555; margin-top: 20px;" id="loadingText">Loading Profile...</h3>
   </div>
 
   <div class="container" id="mainContent" style="display: none;">
@@ -122,49 +117,71 @@
   </div>
 
   <script>
-    // WEB APP URL HERE
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkQZpiexk18zyD_o3QL-qz5lIURpuAx0kt59mLviIk68MSmoyoplDOI0CoSpWCrGY/exec";
+    // ########################################################
+    // ඔබගේ අලුත් WEB APP URL එක මෙතැනට ඇතුළත් කරන්න
+    const APPS_SCRIPT_URL = "YOUR_WEB_APP_URL";
+    // ########################################################
     
     const urlParams = new URLSearchParams(window.location.search);
     const shopId = urlParams.get('id');
-    const autoTable = urlParams.get('table'); // Catch table number from QR URL
+    const autoTable = urlParams.get('table'); 
     
-    // Cart State
     let cart = {}; 
-    // Format: { "ProductID": { name: "Burger", price: 500, qty: 1 } }
 
     window.onload = () => {
-      if (!shopId) { document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:red;'>Invalid QR Code!</h2>"; return; }
+      if (!shopId) { 
+        document.getElementById('loadingScreen').innerHTML = "<h2 style='color:red;'>Invalid QR Code!<br><small style='color:gray;'>URL එකෙහි අගට ?id=101 ආකාරයට ID එකක් තිබිය යුතුය.</small></h2>"; 
+        return; 
+      }
       
-      // If table is provided in URL, pre-fill and disable the input
       if(autoTable) {
         let tInput = document.getElementById('orderTable');
-        tInput.value = autoTable;
-        tInput.readOnly = true;
-        tInput.style.background = "#eee";
+        if(tInput) {
+          tInput.value = autoTable;
+          tInput.readOnly = true;
+          tInput.style.background = "#eee";
+        }
       }
 
-      // Live Check (Feature lock / expiry check)
-      fetch(`${APPS_SCRIPT_URL}?action=checkStatus&shopId=${shopId}`).then(res=>res.json()).then(data => {
-        if(data.success && (data.isExpired || data.storeStatus === 'Inactive')) {
-           document.body.innerHTML = `
-            <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#f8d7da; padding: 20px; text-align: center;">
-              <i class="fas fa-exclamation-triangle" style="font-size:50px; color:#721c24; margin-bottom:20px;"></i>
-              <h2 style="color:#721c24;">සේවාව තාවකාලිකව අත්හිටුවා ඇත.</h2>
-              <p style="color:#721c24;">(Service Suspended / Expired)</p>
-            </div>`;
-           return;
-        }
-        loadProfile();
-      }).catch(err => loadProfile());
+      if (APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbzkQZpiexk18zyD_o3QL-qz5lIURpuAx0kt59mLviIk68MSmoyoplDOI0CoSpWCrGY/exec" || APPS_SCRIPT_URL.trim() === "") {
+        document.getElementById('mainSpinner').style.display = 'none';
+        document.getElementById('loadingText').innerHTML = "<span style='color:red;'>Configuration Error!</span><br><small style='color:#333;font-weight:normal;'>කරුණාකර කේතයේ ඇති 'YOUR_WEB_APP_URL' වෙනුවට ඔබගේ සැබෑ Google Apps Script Web App URL එක ආදේශ කරන්න.</small>";
+        return;
+      }
+
+      // Check system status
+      fetch(`${APPS_SCRIPT_URL}?action=checkStatus&shopId=${shopId}`)
+        .then(res => {
+          if (!res.ok) throw new Error("Google Server Response Not OK: " + res.status);
+          return res.json();
+        })
+        .then(data => {
+          if(data.success && (data.isExpired || data.storeStatus === 'Inactive')) {
+             document.getElementById('loadingScreen').innerHTML = `
+              <div style="padding: 20px; text-align: center;">
+                <i class="fas fa-exclamation-triangle" style="font-size:50px; color:#721c24; margin-bottom:20px;"></i>
+                <h2 style="color:#721c24;margin:0;">සේවාව තාවකාලිකව අත්හිටුවා ඇත.</h2>
+                <p style="color:#666;">(Service Suspended / Expired)</p>
+              </div>`;
+             return;
+          }
+          loadProfile();
+        })
+        .catch(err => {
+          console.warn("Status check failed, bypassing to loadProfile:", err);
+          loadProfile(); // Bypass if checkStatus is failing to check profile directly
+        });
     };
 
     function loadProfile() {
       fetch(`${APPS_SCRIPT_URL}?action=profile&id=${shopId}`)
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error("Profile API Response Not OK: " + res.status);
+          return res.json();
+        })
         .then(data => {
-          document.getElementById('loadingScreen').style.display = 'none';
           if (data.success && data.data) {
+            document.getElementById('loadingScreen').style.display = 'none';
             let p = data.data;
             document.getElementById('mainContent').style.display = 'block';
             document.getElementById('bName').innerText = p.BusinessName || "Welcome";
@@ -189,7 +206,14 @@
             
             document.getElementById('linksContainer').innerHTML = linksHtml;
             loadProducts();
-          } else { document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:red;'>Profile Not Found!</h2>"; }
+          } else { 
+            document.getElementById('mainSpinner').style.display = 'none';
+            document.getElementById('loadingText').innerHTML = `<span style='color:red;'>Profile Not Found! (ID: ${shopId})</span><br><small style='color:#333;font-weight:normal;'>${data.error || 'මෙම ID එක දත්ත ගබඩාවේ සොයාගත නොහැක. Admin Panel එකෙන් මෙම ID එක සේව් කර ඇත්දැයි බලන්න.'}</small>`;
+          }
+        })
+        .catch(err => {
+          document.getElementById('mainSpinner').style.display = 'none';
+          document.getElementById('loadingText').innerHTML = `<span style='color:red;font-weight:bold;'>Connection Error!</span><br><br><div style='text-align:left;background:#fff5f5;padding:15px;border-radius:8px;border:1px solid #ffcdd2;font-size:13px;font-family:monospace;white-space:pre-wrap;color:#b71c1c;'>${err.message}</div><br><small style='color:#555;font-weight:normal;'>පද්ධතිය සම්බන්ධ කර ගැනීමට නොහැක. කරුණාකර ඔබ Apps Script එකේ <strong>Anyone</strong> අවසර ලබා දී අලුත්ම URL එක නිවැරදිව ලබා දුන්නේ දැයි පරීක්ෂා කරන්න.</small>`;
         });
     }
 
@@ -226,16 +250,14 @@
             });
             document.getElementById('productsList').innerHTML = html;
           }
-        });
+        }).catch(err => console.log("Error loading products:", err));
     }
 
-    // --- CART LOGIC ---
     function addToCart(id, name, price) {
       if(cart[id]) { cart[id].qty += 1; } 
       else { cart[id] = { name: name, price: price, qty: 1 }; }
       updateCartUI();
       
-      // Small animation
       let btn = document.getElementById('cartBtn');
       btn.style.transform = 'scale(1.2)';
       setTimeout(()=> btn.style.transform = 'scale(1)', 200);
@@ -285,7 +307,7 @@
 
     function placeOrder() {
       let totalAmount = 0;
-      let itemsFormat = {}; // Clean format for Backend { "Burger": 2, "Coke": 1 }
+      let itemsFormat = {}; 
       
       for(let id in cart) {
         totalAmount += (cart[id].price * cart[id].qty);
@@ -323,7 +345,7 @@
         .then(data => {
           document.getElementById('placeOrderBtn').disabled = false;
           if(data.success) {
-             cart = {}; // Empty Cart
+             cart = {}; 
              updateCartUI();
              msg.innerText = "✅ සාර්ථකයි! ඔබේ ඇණවුම කුස්සියට යවන ලදී.";
              msg.style.color = "green";
@@ -336,7 +358,6 @@
           msg.innerText = "Network Error!"; msg.style.color = "red";
         });
     }
-
   </script>
 </body>
 </html>
