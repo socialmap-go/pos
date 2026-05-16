@@ -1,159 +1,342 @@
-<!DOCTYPE html><html lang="en"><head>
+<!DOCTYPE html>
+<html lang="si">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Profile | Social Map</title>
+  <title>Smart Menu & Profile | Social Map</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; display: flex; justify-content: center; min-height: 100vh; }
-    .profile-container { background: white; width: 100%; max-width: 400px; box-shadow: 0 0 20px rgba(0,0,0,0.05); min-height: 100vh; position: relative; display: flex; flex-direction: column; }
-    .theme-banner { height: 120px; background-color: #d32f2f; background-size: cover; background-position: center; background-repeat: no-repeat; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 20px; transition: background-color 0.5s;}
-    .profile-img-placeholder { width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: -40px; border: 4px solid white; overflow: hidden; }
-    .info-section { text-align: center; padding: 50px 20px 20px 20px; }
-    h1 { margin: 0; font-size: 24px; color: #333; }
-    p { color: #777; font-size: 14px; margin-top: 5px; }
-    .links-section { padding: 0 20px 30px 20px; display: flex; flex-direction: column; gap: 15px; }
-    .btn { display: none; width: 100%; padding: 15px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; color: white; box-sizing: border-box; transition: transform 0.2s; border: none; cursor: pointer; align-items: center; justify-content: center; gap: 10px; }
-    .btn:active { transform: scale(0.98); }
-    .btn i { font-size: 20px; } 
-    .btn-wa { background: #25D366; } .btn-maps { background: #EA4335; } .btn-fb { background: #1877F2; } .btn-ig { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); } .btn-tiktok { background: #000000; } .btn-web { background: #333333; } .btn-email { background: #ea4335; } .btn-menu { background: #673AB7; } .btn-bank { background: #00695c; } .btn-review { background: white; color: #333; border: 2px solid #fbbc04; box-shadow: 0 4px 6px rgba(0,0,0,0.05);} .btn-review i { color: #fbbc04; } .btn-loyalty { background: #ff9800; animation: pulse 2s infinite;} @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 152, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0); } }
-    .btn-products { background: #1976d2; display: flex !important; } .btn-feedback { background: #607d8b; display: flex !important; }
-    .product-card { background: #fdfdfd; border: 1px solid #eee; border-radius: 10px; padding: 15px; margin-bottom: 15px; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.02); text-align: left; }
-    .product-name { font-weight: bold; color: #444; font-size: 16px; }
-    .product-price { color: #d32f2f; font-weight: bold; font-size: 16px; margin-top: 5px; }
-    .product-gallery { display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; padding-bottom: 5px; }
-    .product-img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
-    .footer { margin-top: auto; padding: 20px; text-align: center; font-size: 12px; color: #aaa; }
-    #loader { position: absolute; top:0; left:0; width:100%; height:100%; background:white; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index: 100; }
-    .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #d32f2f; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; } @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-    .modal-content { width: 90%; max-width: 400px; background: white; border-radius: 15px; padding: 20px; box-sizing: border-box; text-align: center; position: relative; max-height: 90vh; overflow-y: auto;}
-    .close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: #aaa; border: none; background: none;}
-    .loyalty-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; text-align: center;}
-    .loyalty-btn { background: #d32f2f; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px;}
-    .link-text { color: #d32f2f; font-size: 14px; text-decoration: underline; cursor: pointer; margin-top: 15px; display: inline-block;}
-    .stamp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0; } .stamp-circle { width: 45px; height: 45px; border-radius: 50%; background: #eee; border: 2px dashed #ccc; display: flex; justify-content: center; align-items: center; font-size: 20px; margin: 0 auto;} .stamp-filled { background: #ff9800; border: 2px solid #e68a00; color: white; }
-    .menu-iframe { width: 100%; height: 75vh; border: none; border-radius: 10px;}
-    .bank-info-box { background: #e0f2f1; padding: 15px; border-radius: 10px; border: 1px solid #b2dfdb; text-align: left; font-family: monospace; font-size: 15px; color: #004d40; white-space: pre-wrap; line-height: 1.6; }
-  </style></head><body>
-  <div class="profile-container">
-    <div id="loader"><div class="spinner"></div><p style="margin-top:15px; font-weight:bold;">Loading...</p></div>
-    <div class="theme-banner" id="themeBanner"><div class="profile-img-placeholder" id="profileIcon">🏢</div></div>
-    <div class="info-section"><h1 id="bName">Loading...</h1><p>Welcome to our Smart Profile</p></div>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f8; margin: 0; padding: 0; padding-bottom: 80px; }
+    .cover-img { width: 100%; height: 200px; object-fit: cover; background: #ddd; }
+    .profile-img { width: 120px; height: 120px; border-radius: 50%; border: 5px solid white; object-fit: cover; margin-top: -60px; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .container { max-width: 600px; margin: 0 auto; background: white; min-height: 100vh; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+    .content { padding: 20px; text-align: center; }
+    h1 { margin: 10px 0 5px 0; color: #333; font-size: 24px; }
+    .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; margin-bottom: 20px; background: #e8f5e9; color: #2e7d32; }
+    
+    /* Social Buttons */
+    .links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 30px; }
+    .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border-radius: 10px; text-decoration: none; color: white; font-weight: bold; transition: 0.2s; }
+    .social-btn:active { transform: scale(0.95); }
+    .b-wa { background: #25D366; } .b-fb { background: #1877F2; } .b-ig { background: #E4405F; } .b-map { background: #EA4335; }
+    .b-tk { background: #000000; } .b-web { background: #607D8B; } .b-menu { background: #FF9800; } .b-rev { background: #FFB300; color: #333; }
+    
+    .section-title { font-size: 18px; color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; text-align: left; }
 
-    <div class="links-section">
-      <button class="btn btn-products" id="btnProducts" onclick="document.getElementById('productsModal').style.display='flex'" style="display:none;"><i class="fas fa-box-open"></i> Our Services & Products</button>
-      <button class="btn btn-feedback" id="btnFeedback" onclick="document.getElementById('feedbackModal').style.display='flex'"><i class="fas fa-comment-dots"></i> Feedback & Suggestions</button>
-      <button class="btn btn-loyalty" id="btnLoyalty" onclick="openLoyaltyModal('viewLogin')"><i class="fas fa-gift"></i> My Loyalty Card</button>
-      <a href="#" id="btnReview" target="_blank" class="btn btn-review"><i class="fab fa-google"></i> Rate Us on Google</a>
-      <button id="btnBank" class="btn btn-bank" onclick="document.getElementById('bankModal').style.display='flex'"><i class="fas fa-university"></i> Bank Details</button>
-      <a href="#" id="btnWa" target="_blank" class="btn btn-wa"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-      <a href="#" id="btnMaps" target="_blank" class="btn btn-maps"><i class="fas fa-map-marker-alt"></i> Google Maps</a>
-      <a href="#" id="btnFb" target="_blank" class="btn btn-fb"><i class="fab fa-facebook-f"></i> Facebook</a>
-      <a href="#" id="btnIg" target="_blank" class="btn btn-ig"><i class="fab fa-instagram"></i> Instagram</a>
-      <a href="#" id="btnTiktok" target="_blank" class="btn btn-tiktok"><i class="fab fa-tiktok"></i> TikTok</a>
-      <a href="#" id="btnWeb" target="_blank" class="btn btn-web"><i class="fas fa-globe"></i> Website</a>
-      <a href="#" id="btnEmail" class="btn btn-email"><i class="fas fa-envelope"></i> Email Us</a>
-      <button id="btnMenu" class="btn btn-menu" onclick="openMenu()"><i class="fas fa-file-pdf"></i> View Menu</button>
-    </div>
-    <div class="footer">Powered by Mapa Solutions - Social Map</div>
+    /* Products / e-Menu */
+    .product-card { display: flex; gap: 15px; background: #fff; border: 1px solid #eee; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); text-align: left; align-items: center;}
+    .product-imgs { display: flex; gap: 5px; }
+    .product-imgs img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; }
+    .product-info { flex: 1; }
+    .product-title { font-weight: bold; font-size: 16px; margin: 0 0 5px 0; color: #333; }
+    .product-price { color: #d32f2f; font-weight: bold; font-size: 15px; margin: 0; }
+    .btn-add { background: #ff9800; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(255, 152, 0, 0.3); }
+
+    /* Floating Cart Button */
+    .floating-cart { position: fixed; bottom: 20px; right: 20px; background: #d32f2f; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; box-shadow: 0 5px 15px rgba(211, 47, 47, 0.4); cursor: pointer; z-index: 100; transition: 0.3s; }
+    .floating-cart:active { transform: scale(0.9); }
+    .cart-badge { position: absolute; top: 0; right: 0; background: #ffeb3b; color: #333; font-size: 12px; font-weight: bold; width: 22px; height: 22px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid #d32f2f; }
+
+    /* Cart Modal */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: flex-end; }
+    .modal-content { background: white; width: 100%; max-width: 600px; border-radius: 20px 20px 0 0; padding: 25px; box-sizing: border-box; max-height: 85vh; overflow-y: auto; animation: slideUp 0.3s ease-out; }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
+    .qty-controls { display: flex; align-items: center; gap: 10px; background: #f4f6f8; border-radius: 20px; padding: 2px 5px; }
+    .qty-btn { border: none; background: white; width: 25px; height: 25px; border-radius: 50%; font-weight: bold; cursor: pointer; color: #333; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .cart-total { font-size: 20px; font-weight: bold; color: #d32f2f; display: flex; justify-content: space-between; margin-top: 15px; border-top: 2px solid #333; padding-top: 15px; }
+    .input-field { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; font-size: 15px; }
+
+    .btn-submit { background: #2e7d32; color: white; padding: 15px; border: none; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3); }
+
+    /* Loading Overlay */
+    #loadingScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .spinner { border: 5px solid #f3f3f3; border-top: 5px solid #e65100; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div id="loadingScreen">
+    <div class="spinner"></div>
+    <h3 style="color: #555; margin-top: 20px;">Loading Profile...</h3>
   </div>
 
-  <div id="productsModal" class="modal"><div class="modal-content" style="background:#f4f6f8;"><button class="close-btn" onclick="document.getElementById('productsModal').style.display='none'">&times;</button><h2 style="margin-top: 10px; color: #1976d2;"><i class="fas fa-box-open"></i> Our Services & Products</h2><div id="productsListModal" style="margin-top: 20px;">Loading...</div></div></div>
-  
-  <div id="feedbackModal" class="modal">
-    <div class="modal-content"><button class="close-btn" onclick="document.getElementById('feedbackModal').style.display='none'">&times;</button><h2 style="margin-top: 10px; color: #607d8b;"><i class="fas fa-comment-dots"></i> Feedback & Suggestions</h2><p style="font-size: 13px; color: #555;">Please share your valuable feedback and suggestions with us.</p>
-      <input type="text" id="fName" class="loyalty-input" placeholder="Your Name"><input type="tel" id="fPhone" class="loyalty-input" placeholder="Phone Number (Optional)"><textarea id="fMsg" class="loyalty-input" rows="4" placeholder="Write your feedback or complaint here..."></textarea>
-      <div style="text-align:left; margin-top:10px;"><label style="font-size:13px; font-weight:bold; color:#d32f2f;"><i class="fas fa-camera"></i> Add a Photo:</label><input type="file" id="fFile" accept="image/*" style="margin-top:5px; font-size:12px;"></div>
-      <button class="loyalty-btn" style="background:#607d8b;" id="btnSubmitFeedback" onclick="submitFeedback()">Submit</button>
+  <div class="container" id="mainContent" style="display: none;">
+    <img src="" id="coverImg" class="cover-img" onerror="this.src='https://via.placeholder.com/600x200?text=Cover+Image'">
+    <div class="content">
+      <img src="" id="profImg" class="profile-img" onerror="this.src='https://via.placeholder.com/120?text=Logo'">
+      <h1 id="bName">Business Name</h1>
+      <div id="statusBadge" class="status-badge"><i class="fas fa-check-circle"></i> Verified Business</div>
+
+      <div class="links-grid" id="linksContainer"></div>
+      
+      <div id="bankDetailsArea" style="display:none; background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 30px; text-align: left; font-size: 14px; border: 1px dashed #1976d2;">
+        <strong style="color: #1565c0;"><i class="fas fa-university"></i> Bank Details:</strong>
+        <div id="bankText" style="margin-top: 5px; white-space: pre-wrap; color: #333;"></div>
+      </div>
+
+      <div id="productsSection" style="display:none;">
+        <h2 class="section-title"><i class="fas fa-utensils"></i> අපගේ මෙනුව / Products</h2>
+        <div id="productsList"></div>
+      </div>
+      
+      <br>
+      <div style="font-size: 12px; color: gray; margin-top: 30px;">Powered by Mapa Solutions (Social Map)</div>
     </div>
   </div>
 
-  <div id="bankModal" class="modal"><div class="modal-content"><button class="close-btn" onclick="document.getElementById('bankModal').style.display='none'">&times;</button><h2 style="margin-top: 10px; color: #00695c;"><i class="fas fa-university"></i> Bank Details</h2><p style="font-size: 13px; color: #555;">Use the following account details for your deposits.</p><div id="bankInfoDisplay" class="bank-info-box">Loading...</div></div></div>
-  <div id="menuModal" class="modal"><div class="modal-content" style="width: 95%; max-width: 500px; padding: 10px; height: 85%;"><button class="close-btn" onclick="closeModal('menuModal')">&times;</button><iframe id="menuIframe" class="menu-iframe" src=""></iframe></div></div>
+  <div class="floating-cart" id="cartBtn" style="display: none;" onclick="openCart()">
+    <i class="fas fa-shopping-cart"></i>
+    <div class="cart-badge" id="cartCount">0</div>
+  </div>
 
-  <div id="loyaltyModal" class="modal">
-    <div class="modal-content" id="viewLogin" style="display: none;"><button class="close-btn" onclick="closeModal('loyaltyModal')">&times;</button><h2 style="margin-top: 10px;"><i class="fas fa-gift" style="color:#d32f2f;"></i> My Stamps</h2><input type="tel" id="lPhone" class="loyalty-input" placeholder="Phone (07XXXXXXXX)" maxlength="10"><input type="password" id="lPin" class="loyalty-input" placeholder="4-Digit PIN" maxlength="4"><button class="loyalty-btn" onclick="checkLoyalty()" id="btnCheck">Check</button><span class="link-text" onclick="switchView('viewSetup')">No account? Register</span><br><span class="link-text" onclick="switchView('viewForgot')">Forgot PIN?</span><p id="msgLogin" style="color: red; font-size: 13px; font-weight: bold; display: none;"></p></div>
-    <div class="modal-content" id="viewSetup" style="display: none;"><button class="close-btn" onclick="closeModal('loyaltyModal')">&times;</button><h2 style="margin-top: 10px;">🛡️ Secure Account</h2><input type="tel" id="sPhone" class="loyalty-input" placeholder="Phone (07XXXXXXXX)" maxlength="10"><input type="number" id="sPin" class="loyalty-input" placeholder="New 4-Digit PIN" maxlength="4"><input type="number" id="sYear" class="loyalty-input" placeholder="Birth Year (e.g. 1995)" maxlength="4"><button class="loyalty-btn" onclick="setupLoyalty()" id="btnSetup">Save</button><p id="msgSetup" style="color: red; font-size: 13px; font-weight: bold; display: none;"></p></div>
-    <div class="modal-content" id="viewForgot" style="display: none;"><button class="close-btn" onclick="closeModal('loyaltyModal')">&times;</button><h2 style="margin-top: 10px;">🔄 Reset PIN</h2><input type="tel" id="fPhone" class="loyalty-input" placeholder="Phone (07XXXXXXXX)" maxlength="10"><input type="number" id="fYear" class="loyalty-input" placeholder="Birth Year (e.g. 1995)" maxlength="4"><input type="number" id="fNewPin" class="loyalty-input" placeholder="New 4-Digit PIN" maxlength="4"><button class="loyalty-btn" onclick="resetPin()" id="btnReset">Reset PIN</button><p id="msgForgot" style="color: red; font-size: 13px; font-weight: bold; display: none;"></p></div>
-    <div class="modal-content" id="viewCard" style="display: none;"><button class="close-btn" onclick="closeModal('loyaltyModal')">&times;</button><h2 style="margin-top: 10px; color: #d32f2f;"><i class="fas fa-gift"></i> Loyalty Card</h2><p id="stampText" style="font-size: 15px; font-weight: bold;"></p><div class="stamp-grid" id="stampGrid"></div><p id="targetMsg" style="font-size: 13px; color: #555; margin-bottom: 0;"></p></div>
+  <div class="modal" id="cartModal">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+        <h2 style="margin: 0; color: #d32f2f;"><i class="fas fa-shopping-basket"></i> Your Order</h2>
+        <button style="background:none; border:none; font-size:24px; cursor:pointer; color: #555;" onclick="closeCart()">✖</button>
+      </div>
+
+      <div id="cartItemsContainer" style="margin-bottom: 15px;"></div>
+      
+      <div class="cart-total">
+        <span>Total:</span>
+        <span id="cartTotalDisplay">රු. 0.00</span>
+      </div>
+
+      <div style="margin-top: 20px;">
+        <label style="font-size: 13px; font-weight: bold; color: #555;">මේස අංකය / Table Number</label>
+        <input type="text" id="orderTable" class="input-field" placeholder="E.g. Table 03 (Leave blank for Takeaway)">
+        
+        <label style="font-size: 13px; font-weight: bold; color: #555;">ඔබගේ නම / Your Name</label>
+        <input type="text" id="orderName" class="input-field" placeholder="Enter your name">
+        
+        <label style="font-size: 13px; font-weight: bold; color: #555;">දුරකථන අංකය / Phone (Optional for Loyalty)</label>
+        <input type="tel" id="orderPhone" class="input-field" placeholder="07XXXXXXXX" maxlength="10">
+
+        <button class="btn-submit" id="placeOrderBtn" onclick="placeOrder()">Place Order Now</button>
+        <p id="orderMsg" style="text-align: center; font-weight: bold; margin-top: 10px; display: none;"></p>
+      </div>
+    </div>
   </div>
 
   <script>
     // WEB APP URL HERE
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzU8NQF6m62kbDwCr6ol48LEVl8-veggT_bR5Lue7sIrJWlgpiI7GzosU_PqZzzV0JP/exec";
-    let currentShopId = ""; let menuPdfLink = ""; let globalStampTarget = 10;
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcHuHqBTZbgujvCdEoXOp8FyCWFzTyWB2Sjkwa39z4JQ2lx2dD7XsisJ_BucdPf0c/exec";
     
-    window.onload = function() {
-      const urlParams = new URLSearchParams(window.location.search); currentShopId = urlParams.get('id');
-      if(currentShopId) {
-        fetch(`${APPS_SCRIPT_URL}?action=profile&id=${currentShopId}`).then(res => res.json()).then(data => {
-            document.getElementById('loader').style.display = 'none';
-            if(data.success) {
-              const p = data.data; document.getElementById('bName').innerText = p.BusinessName;
-              if(p.ThemeColor && p.ThemeColor.trim() !== "") document.getElementById('themeBanner').style.backgroundColor = p.ThemeColor;
-              if (p.CoverImage && p.CoverImage.trim() !== "") {
-                let covUrl = p.CoverImage; let covFileIdMatch = covUrl.match(/[-\w]{25,}/); 
-                if (covUrl.includes("drive.google.com") && covFileIdMatch) { covUrl = "https://drive.google.com/uc?export=view&id=" + covFileIdMatch[0]; }
-                document.getElementById('themeBanner').style.backgroundImage = `url('${covUrl}')`;
-              }
-              if (p.ProfileImage && p.ProfileImage.trim() !== "") {
-                let imgUrl = p.ProfileImage; let fileIdMatch = imgUrl.match(/[-\w]{25,}/); 
-                if (imgUrl.includes("drive.google.com") && fileIdMatch) { imgUrl = "https://drive.google.com/uc?export=view&id=" + fileIdMatch[0]; }
-                document.getElementById('profileIcon').innerHTML = `<img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover;">`;
-              } else { document.getElementById('profileIcon').innerText = p.BusinessName.charAt(0).toUpperCase(); }
-              const setupBtn = (id, link) => { if(link && link.trim() !== "" && link !== "undefined") { document.getElementById(id).href = link; document.getElementById(id).style.display = "flex"; } };
-              setupBtn('btnWa', p.WhatsApp); setupBtn('btnMaps', p.Maps); setupBtn('btnFb', p.Facebook); setupBtn('btnIg', p.Instagram); setupBtn('btnTiktok', p.TikTok); setupBtn('btnWeb', p.Website); setupBtn('btnReview', p.GoogleReview);
-              if (p.Email) { document.getElementById('btnEmail').href = "mailto:" + p.Email; document.getElementById('btnEmail').style.display = "flex"; }
-              if (p.MenuPDF) { menuPdfLink = p.MenuPDF; document.getElementById('btnMenu').style.display = "flex"; }
-              if (p.BankDetails && p.BankDetails.trim() !== "") { document.getElementById('btnBank').style.display = "flex"; document.getElementById('bankInfoDisplay').innerText = p.BankDetails; }
-              if (p.LoyaltyStatus === "Active") { document.getElementById('btnLoyalty').style.display = "flex"; globalStampTarget = parseInt(p.StampTarget) || 10; }
-              fetch(`${APPS_SCRIPT_URL}?action=getProducts&shopId=${currentShopId}`).then(res => res.json()).then(prodData => {
-                  if(prodData.success && prodData.data.length > 0) {
-                    document.getElementById('btnProducts').style.display = 'flex'; let pList = document.getElementById('productsListModal'); pList.innerHTML = '';
-                    prodData.data.forEach(p => {
-                      let typeBadge = p.Type ? `<span style="font-size:11px; background:#ddd; padding:2px 5px; border-radius:3px;">${p.Type}</span>` : '';
-                      let imgs = ""; if(p.Image1) imgs += `<img src="${p.Image1}" class="product-img">`; if(p.Image2) imgs += `<img src="${p.Image2}" class="product-img">`; if(p.Image3) imgs += `<img src="${p.Image3}" class="product-img">`;
-                      let imgHtml = imgs ? `<div class="product-gallery">${imgs}</div>` : '';
-                      pList.innerHTML += `<div class="product-card"><div>${typeBadge}</div><div class="product-name">${p.ProductName || 'Item'}</div><div class="product-price">Rs. ${p.Price || 0}</div>${imgHtml}</div>`;
-                    });
-                  }
-                });
-            } else { document.getElementById('bName').innerText = "Profile Not Found"; }
-          }).catch(err => { document.getElementById('loader').style.display = 'none'; document.getElementById('bName').innerText = "Connection Error"; });
-      } else { document.getElementById('loader').style.display = 'none'; document.getElementById('bName').innerText = "Invalid Link"; }
+    const urlParams = new URLSearchParams(window.location.search);
+    const shopId = urlParams.get('id');
+    const autoTable = urlParams.get('table'); // Catch table number from QR URL
+    
+    // Cart State
+    let cart = {}; 
+    // Format: { "ProductID": { name: "Burger", price: 500, qty: 1 } }
+
+    window.onload = () => {
+      if (!shopId) { document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:red;'>Invalid QR Code!</h2>"; return; }
+      
+      // If table is provided in URL, pre-fill and disable the input
+      if(autoTable) {
+        let tInput = document.getElementById('orderTable');
+        tInput.value = autoTable;
+        tInput.readOnly = true;
+        tInput.style.background = "#eee";
+      }
+
+      // Live Check (Feature lock / expiry check)
+      fetch(`${APPS_SCRIPT_URL}?action=checkStatus&shopId=${shopId}`).then(res=>res.json()).then(data => {
+        if(data.success && (data.isExpired || data.storeStatus === 'Inactive')) {
+           document.body.innerHTML = `
+            <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#f8d7da; padding: 20px; text-align: center;">
+              <i class="fas fa-exclamation-triangle" style="font-size:50px; color:#721c24; margin-bottom:20px;"></i>
+              <h2 style="color:#721c24;">සේවාව තාවකාලිකව අත්හිටුවා ඇත.</h2>
+              <p style="color:#721c24;">(Service Suspended / Expired)</p>
+            </div>`;
+           return;
+        }
+        loadProfile();
+      }).catch(err => loadProfile());
     };
 
-    function submitFeedback() {
-      const name = document.getElementById('fName').value; const phone = document.getElementById('fPhone').value; const msg = document.getElementById('fMsg').value; const fileInput = document.getElementById('fFile');
-      if(!name || !msg) { alert("Please enter your name and message."); return; }
-      document.getElementById('btnSubmitFeedback').innerText = "Uploading... Please wait";
-      let payload = { action: 'submitFeedback', shopId: currentShopId, name: name, phone: phone, message: msg };
-      if(fileInput.files.length > 0) {
-        let file = fileInput.files[0]; let reader = new FileReader();
-        reader.onload = function(e) { payload.imageBase64 = e.target.result.split(',')[1]; payload.mimeType = file.type; sendFeedbackReq(payload); };
-        reader.readAsDataURL(file);
-      } else { sendFeedbackReq(payload); }
+    function loadProfile() {
+      fetch(`${APPS_SCRIPT_URL}?action=profile&id=${shopId}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('loadingScreen').style.display = 'none';
+          if (data.success && data.data) {
+            let p = data.data;
+            document.getElementById('mainContent').style.display = 'block';
+            document.getElementById('bName').innerText = p.BusinessName || "Welcome";
+            if(p.ProfileImage) document.getElementById('profImg').src = p.ProfileImage;
+            if(p.CoverImage) document.getElementById('coverImg').src = p.CoverImage;
+            
+            if(p.BankDetails) {
+              document.getElementById('bankDetailsArea').style.display = 'block';
+              document.getElementById('bankText').innerText = p.BankDetails;
+            }
+
+            let linksHtml = "";
+            const addLink = (url, icon, cls, text) => { if(url && url.trim()!=="") linksHtml += `<a href="${url}" target="_blank" class="social-btn ${cls}"><i class="${icon}"></i> ${text}</a>`; };
+            addLink(p.WhatsApp, 'fab fa-whatsapp', 'b-wa', 'WhatsApp');
+            addLink(p.Maps, 'fas fa-map-marker-alt', 'b-map', 'Location');
+            addLink(p.Facebook, 'fab fa-facebook-f', 'b-fb', 'Facebook');
+            addLink(p.Instagram, 'fab fa-instagram', 'b-ig', 'Instagram');
+            addLink(p.TikTok, 'fab fa-tiktok', 'b-tk', 'TikTok');
+            addLink(p.Website, 'fas fa-globe', 'b-web', 'Website');
+            addLink(p.MenuPDF, 'fas fa-file-pdf', 'b-menu', 'Menu PDF');
+            addLink(p.GoogleReview, 'fas fa-star', 'b-rev', 'Rate Us');
+            
+            document.getElementById('linksContainer').innerHTML = linksHtml;
+            loadProducts();
+          } else { document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:red;'>Profile Not Found!</h2>"; }
+        });
     }
-    function sendFeedbackReq(payload) { fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(data => { alert(data.message); document.getElementById('feedbackModal').style.display='none'; document.getElementById('btnSubmitFeedback').innerText = "Submit"; document.getElementById('fName').value = ""; document.getElementById('fMsg').value = ""; document.getElementById('fFile').value = ""; }).catch(err => { alert("Network Error!"); document.getElementById('btnSubmitFeedback').innerText = "Submit"; }); }
-    function openMenu() { let finalUrl = menuPdfLink; if(finalUrl.includes("drive.google.com") && finalUrl.includes("/view")) finalUrl = finalUrl.replace(/\/view.*$/, "/preview"); document.getElementById('menuIframe').src = finalUrl; document.getElementById('menuModal').style.display = "flex"; }
-    function openLoyaltyModal(view) { document.getElementById('loyaltyModal').style.display = "flex"; switchView(view); }
-    function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; if(modalId === 'menuModal') document.getElementById('menuIframe').src = ""; }
-    function switchView(viewId) { document.getElementById('viewLogin').style.display = "none"; document.getElementById('viewSetup').style.display = "none"; document.getElementById('viewForgot').style.display = "none"; document.getElementById('viewCard').style.display = "none"; const targetView = document.getElementById(viewId); if(targetView) targetView.style.display = "block"; }
-    function showMsg(id, text, color="red") { const el = document.getElementById(id); el.innerText = text; el.style.color = color; el.style.display = "block"; }
-    
-    function checkLoyalty() { const phone = document.getElementById('lPhone').value; const pin = document.getElementById('lPin').value; if(phone.length !== 10) return showMsg('msgLogin', "Please enter a valid 10-digit number"); document.getElementById('btnCheck').innerText = "Checking..."; fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'loyaltyGet', shopId: currentShopId, phone: phone, pin: pin }) }).then(res => res.json()).then(data => { document.getElementById('btnCheck').innerText = "Check"; if(data.success) { if(data.requiresSetup) { document.getElementById('sPhone').value = phone; switchView('viewSetup'); } else { drawStampCard(data.stamps, data.redeemed); switchView('viewCard'); } } else { showMsg('msgLogin', data.error); } }); }
-    
-    function setupLoyalty() { const phone = document.getElementById('sPhone').value; const pin = document.getElementById('sPin').value; const year = document.getElementById('sYear').value; if(phone.length!==10 || pin.length!==4 || year.length!==4) return showMsg('msgSetup', "Please fill all details correctly."); document.getElementById('btnSetup').innerText = "Saving..."; fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'loyaltySetup', shopId: currentShopId, phone: phone, pin: pin, birthYear: year }) }).then(res => res.json()).then(data => { document.getElementById('btnSetup').innerText = "Save"; if(data.success) { document.getElementById('lPhone').value = phone; showMsg('msgLogin', "Account created! Please log in.", "green"); switchView('viewLogin'); } else { showMsg('msgSetup', data.error); } }); }
-    
-    function resetPin() { const phone = document.getElementById('fPhone').value; const year = document.getElementById('fYear').value; const newPin = document.getElementById('fNewPin').value; if(phone.length!==10 || year.length!==4 || newPin.length!==4) return showMsg('msgForgot', "Please fill all details correctly."); document.getElementById('btnReset').innerText = "Resetting..."; fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'loyaltyResetPinSelf', shopId: currentShopId, phone: phone, birthYear: year, newPin: newPin }) }).then(res => res.json()).then(data => { document.getElementById('btnReset').innerText = "Reset PIN"; if(data.success) { showMsg('msgLogin', "PIN changed. Please log in.", "green"); switchView('viewLogin'); } else { showMsg('msgForgot', data.error); } }); }
-    
-    function drawStampCard(stamps, redeemed) { 
-      document.getElementById('stampText').innerText = `You have ${stamps} stamps!`; 
-      const grid = document.getElementById('stampGrid'); grid.innerHTML = ""; 
-      for(let i=1; i<=globalStampTarget; i++) { 
-         if(i <= stamps) { grid.innerHTML += `<div class="stamp-circle stamp-filled"><i class="fas fa-gift"></i></div>`; } 
-         else { grid.innerHTML += `<div class="stamp-circle">${i}</div>`; } 
-      } 
-      document.getElementById('targetMsg').innerHTML = `Collect ${globalStampTarget} stamps to get a free reward!<br><br><span style="background:#e8f5e9; color:#2e7d32; padding:8px 12px; border-radius:8px; font-weight:bold; display:inline-block; margin-top:15px; border:1px solid #c8e6c9;">🏆 Total Redeemed Rewards: ${redeemed || 0}</span>`; 
+
+    function loadProducts() {
+      fetch(`${APPS_SCRIPT_URL}?action=getProducts&shopId=${shopId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data && data.data.length > 0) {
+            document.getElementById('productsSection').style.display = 'block';
+            let html = "";
+            data.data.forEach(p => {
+              let pName = p.ProductName || p['Product Name'] || "Item";
+              let pPrice = parseFloat(p.Price || p['Product Price'] || 0);
+              let pId = p.ProductID || p['Product ID'] || Math.random().toString();
+              
+              let imgs = "";
+              let img1 = p.Image1 || p.img1; let img2 = p.Image2 || p.img2;
+              if(img1) imgs += `<img src="${img1}" onerror="this.style.display='none'">`;
+              if(img2) imgs += `<img src="${img2}" onerror="this.style.display='none'">`;
+
+              html += `
+                <div class="product-card">
+                  <div class="product-info">
+                    <h3 class="product-title">${pName}</h3>
+                    <p class="product-price">රු. ${pPrice.toFixed(2)}</p>
+                    <div class="product-imgs" style="margin-top:8px;">${imgs}</div>
+                  </div>
+                  <div>
+                    <button class="btn-add" onclick="addToCart('${pId}', '${pName.replace(/'/g, "\\'")}', ${pPrice})">
+                      <i class="fas fa-plus"></i> Add
+                    </button>
+                  </div>
+                </div>`;
+            });
+            document.getElementById('productsList').innerHTML = html;
+          }
+        });
     }
-  </script></body></html>
+
+    // --- CART LOGIC ---
+    function addToCart(id, name, price) {
+      if(cart[id]) { cart[id].qty += 1; } 
+      else { cart[id] = { name: name, price: price, qty: 1 }; }
+      updateCartUI();
+      
+      // Small animation
+      let btn = document.getElementById('cartBtn');
+      btn.style.transform = 'scale(1.2)';
+      setTimeout(()=> btn.style.transform = 'scale(1)', 200);
+    }
+
+    function updateCartUI() {
+      let totalQty = 0;
+      let totalAmount = 0;
+      let html = "";
+      
+      for(let id in cart) {
+        totalQty += cart[id].qty;
+        totalAmount += (cart[id].price * cart[id].qty);
+        
+        html += `
+          <div class="cart-item">
+            <div style="flex:1;">
+              <div style="font-weight:bold; color:#333;">${cart[id].name}</div>
+              <div style="font-size:13px; color:#d32f2f;">රු. ${(cart[id].price * cart[id].qty).toFixed(2)}</div>
+            </div>
+            <div class="qty-controls">
+              <button class="qty-btn" onclick="changeQty('${id}', -1)">-</button>
+              <span style="font-weight:bold; width:20px; text-align:center;">${cart[id].qty}</span>
+              <button class="qty-btn" onclick="changeQty('${id}', 1)">+</button>
+            </div>
+          </div>`;
+      }
+      
+      document.getElementById('cartCount').innerText = totalQty;
+      document.getElementById('cartItemsContainer').innerHTML = html;
+      document.getElementById('cartTotalDisplay').innerText = `රු. ${totalAmount.toFixed(2)}`;
+      
+      if(totalQty > 0) { document.getElementById('cartBtn').style.display = 'flex'; } 
+      else { document.getElementById('cartBtn').style.display = 'none'; closeCart(); }
+    }
+
+    function changeQty(id, change) {
+      if(cart[id]) {
+        cart[id].qty += change;
+        if(cart[id].qty <= 0) delete cart[id];
+        updateCartUI();
+      }
+    }
+
+    function openCart() { document.getElementById('cartModal').style.display = 'flex'; }
+    function closeCart() { document.getElementById('cartModal').style.display = 'none'; }
+
+    function placeOrder() {
+      let totalAmount = 0;
+      let itemsFormat = {}; // Clean format for Backend { "Burger": 2, "Coke": 1 }
+      
+      for(let id in cart) {
+        totalAmount += (cart[id].price * cart[id].qty);
+        itemsFormat[cart[id].name] = cart[id].qty;
+      }
+      
+      if(Object.keys(itemsFormat).length === 0) return;
+
+      const tbl = document.getElementById('orderTable').value;
+      const nm = document.getElementById('orderName').value;
+      const ph = document.getElementById('orderPhone').value;
+      const msg = document.getElementById('orderMsg');
+
+      if(!nm) {
+        msg.innerText = "කරුණාකර ඔබගේ නම ඇතුළත් කරන්න.";
+        msg.style.color = "red"; msg.style.display = "block"; return;
+      }
+
+      msg.innerText = "Processing Order...";
+      msg.style.color = "#ff9800"; msg.style.display = "block";
+      document.getElementById('placeOrderBtn').disabled = true;
+
+      const payload = {
+        action: "placeOrder",
+        shopId: shopId,
+        tableNo: tbl || "Takeaway",
+        customerName: nm,
+        phone: ph,
+        items: itemsFormat,
+        totalAmount: totalAmount
+      };
+
+      fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('placeOrderBtn').disabled = false;
+          if(data.success) {
+             cart = {}; // Empty Cart
+             updateCartUI();
+             msg.innerText = "✅ සාර්ථකයි! ඔබේ ඇණවුම කුස්සියට යවන ලදී.";
+             msg.style.color = "green";
+             setTimeout(closeCart, 3000);
+          } else {
+             msg.innerText = "දෝෂයකි: " + data.error; msg.style.color = "red";
+          }
+        }).catch(err => {
+          document.getElementById('placeOrderBtn').disabled = false;
+          msg.innerText = "Network Error!"; msg.style.color = "red";
+        });
+    }
+
+  </script>
+</body>
+</html>
