@@ -93,7 +93,7 @@
 
     <div id="store" class="tab-content">
       <h3 style="margin-top:0;">Manage Store Products</h3>
-      <p style="color:gray; font-size:13px;">ඔබගේ භාණ්ඩ වල මිල ගණන් සහ විස්තර මෙහි දැක්වේ.</p>
+      <p style="color:gray; font-size:13px;">ඔබගේ භාණ්ඩ වල මිල ගණන් පහතින් වෙනස් කළ හැක.</p>
       <div id="storeArea">Loading store items...</div>
     </div>
 
@@ -234,7 +234,7 @@
       });
     }
 
-    // --- LOAD PRODUCTS WITH IMAGES (STORE) ---
+    // --- LOAD PRODUCTS WITH IMAGES & PRICE UPDATE (STORE) ---
     function loadStoreItems() {
       const shopId = sessionStorage.getItem('clientShopId');
       document.getElementById('storeArea').innerHTML = "<p>Loading products...</p>";
@@ -259,13 +259,17 @@
              
              let imgContainer = imgsHtml ? `<div style="display:flex; gap:5px; margin-top:8px;">${imgsHtml}</div>` : "";
 
-             html += `<div style="background:#f9f9f9; padding:12px; margin-bottom:10px; border-radius:8px; border-left:4px solid #1976d2; display:flex; justify-content:space-between; align-items:center;">
-                        <div>
+             html += `<div style="background:#f9f9f9; padding:12px; margin-bottom:10px; border-radius:8px; border-left:4px solid #1976d2; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <div style="flex: 1; min-width: 150px;">
                            <strong style="font-size:16px;">${pName}</strong><br>
                            <span style="font-size:12px; color:gray;">Item ID: ${pId}</span>
                            ${imgContainer}
                         </div>
-                        <div style="font-weight:bold; color:#d32f2f;">රු. ${pPrice}</div>
+                        <div style="display:flex; align-items:center; gap:5px;">
+                          <span style="font-weight:bold; color:#777;">රු.</span>
+                          <input type="number" id="price_${pId}" value="${pPrice}" style="width: 90px; padding: 8px; margin: 0; border: 1px solid #ccc; border-radius: 5px;">
+                          <button class="btn-success" style="padding: 8px 15px; border: none; border-radius: 5px; color: white; cursor: pointer; margin: 0;" onclick="updateClientPrice('${pId}')">Update</button>
+                        </div>
                       </div>`;
           });
           document.getElementById('storeArea').innerHTML = html;
@@ -274,6 +278,42 @@
         }
       }).catch(err => {
          document.getElementById('storeArea').innerHTML = "<p style='color:red;'>Network Error while loading products.</p>";
+      });
+    }
+
+    // --- UPDATE PRICE FROM CLIENT DASHBOARD ---
+    function updateClientPrice(pid) {
+      const shopId = sessionStorage.getItem('clientShopId');
+      const newPrice = document.getElementById(`price_${pid}`).value;
+      
+      if(!newPrice || newPrice === "") {
+        alert("කරුණාකර නව මිල ඇතුළත් කරන්න.");
+        return;
+      }
+
+      const btn = event.target;
+      btn.innerText = "Saving...";
+      btn.disabled = true;
+
+      fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({action: "updatePrice", shopId: shopId, productId: pid, price: newPrice})
+      })
+      .then(res => res.json())
+      .then(data => {
+        btn.innerText = "Update";
+        btn.disabled = false;
+        if(data.success) {
+           alert("මිල සාර්ථකව වෙනස් කරන ලදී!");
+           loadStoreItems(); // Refresh the list
+        } else {
+           alert("දෝෂයකි: " + data.error);
+        }
+      })
+      .catch(err => {
+        btn.innerText = "Update";
+        btn.disabled = false;
+        alert("Network Error!");
       });
     }
 
