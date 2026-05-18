@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Menu | Social Map</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f8; margin: 0; padding: 0; padding-bottom: 80px; }
+    .cover-img { width: 100%; height: 200px; object-fit: cover; background: #ddd; }
+    .profile-img { width: 120px; height: 120px; border-radius: 50%; border: 5px solid white; object-fit: cover; margin-top: -60px; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .container { max-width: 600px; margin: 0 auto; background: white; min-height: 100vh; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+    .content { padding: 20px; text-align: center; }
+    h1 { margin: 10px 0 5px 0; color: #333; font-size: 24px; }
+    .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; margin-bottom: 20px; background: #e8f5e9; color: #2e7d32; }
+    .links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 30px; }
+    .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border-radius: 10px; text-decoration: none; color: white; font-weight: bold; transition: 0.2s; }
+    .b-wa { background: #25D366; } .b-fb { background: #1877F2; } .b-ig { background: #E4405F; } .b-map { background: #EA4335; }
+    .b-tk { background: #000000; } .b-web { background: #607D8B; } .b-menu { background: #FF9800; } .b-rev { background: #FFB300; color: #333; }
+    .section-title { font-size: 18px; color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; text-align: left; }
+    .product-card { display: flex; gap: 15px; background: #fff; border: 1px solid #eee; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); text-align: left; align-items: center;}
+    .product-imgs { display: flex; gap: 5px; } .product-imgs img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; }
+    .product-info { flex: 1; } .product-title { font-weight: bold; font-size: 16px; margin: 0 0 5px 0; color: #333; }
+    .product-price { color: #d32f2f; font-weight: bold; font-size: 15px; margin: 0; }
+    .btn-add { background: #ff9800; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(255, 152, 0, 0.3); }
+    .floating-cart { position: fixed; bottom: 20px; right: 20px; background: #d32f2f; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; box-shadow: 0 5px 15px rgba(211, 47, 47, 0.4); cursor: pointer; z-index: 100; transition: 0.3s; }
+    .cart-badge { position: absolute; top: 0; right: 0; background: #ffeb3b; color: #333; font-size: 12px; font-weight: bold; width: 22px; height: 22px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid #d32f2f; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: flex-end; }
+    .modal-content { background: white; width: 100%; max-width: 600px; border-radius: 20px 20px 0 0; padding: 25px; box-sizing: border-box; max-height: 85vh; overflow-y: auto; }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
+    .qty-controls { display: flex; align-items: center; gap: 10px; background: #f4f6f8; border-radius: 20px; padding: 2px 5px; }
+    .qty-btn { border: none; background: white; width: 25px; height: 25px; border-radius: 50%; font-weight: bold; cursor: pointer; color: #333; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .cart-total { font-size: 20px; font-weight: bold; color: #d32f2f; display: flex; justify-content: space-between; margin-top: 15px; border-top: 2px solid #333; padding-top: 15px; }
+    .input-field { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; font-size: 15px; }
+    .btn-submit { background: #2e7d32; color: white; padding: 15px; border: none; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3); }
+    #loadingScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-sizing: border-box; }
+    .spinner { border: 5px solid #f3f3f3; border-top: 5px solid #e65100; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div id="loadingScreen">
+    <div class="spinner" id="mainSpinner"></div>
+    <h3 style="color: #555; margin-top: 20px;" id="loadingText">Loading Menu...</h3>
+  </div>
+
+  <div class="container" id="mainContent" style="display: none;">
+    <img src="" id="coverImg" class="cover-img" onerror="this.src='https://via.placeholder.com/600x200?text=Cover+Image'">
+    <div class="content">
+      <img src="" id="profImg" class="profile-img" onerror="this.src='https://via.placeholder.com/120?text=Logo'">
+      <h1 id="bName">Business Name</h1>
+      <div id="statusBadge" class="status-badge"><i class="fas fa-check-circle"></i> Verified Business</div>
+
+      <div class="links-grid" id="linksContainer"></div>
+      
+      <div id="bankDetailsArea" style="display:none; background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 30px; text-align: left; font-size: 14px; border: 1px dashed #1976d2;">
+        <strong style="color: #1565c0;"><i class="fas fa-university"></i> Bank Details:</strong>
+        <div id="bankText" style="margin-top: 5px; white-space: pre-wrap; color: #333;"></div>
+      </div>
+
+      <div id="productsSection" style="display:none;">
+        <h2 class="section-title"><i class="fas fa-utensils"></i> අපගේ මෙනුව / Products</h2>
+        <div id="productsList"></div>
+      </div>
+      
+      <br><div style="font-size: 12px; color: gray; margin-top: 30px;">Powered by Mapa Solutions (Social Map)</div>
+    </div>
+  </div>
+
+  <div class="floating-cart" id="cartBtn" style="display: none;" onclick="openCart()"><i class="fas fa-shopping-cart"></i><div class="cart-badge" id="cartCount">0</div></div>
+
+  <div class="modal" id="cartModal">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+        <h2 style="margin: 0; color: #d32f2f;"><i class="fas fa-shopping-basket"></i> Your Order</h2><button style="background:none; border:none; font-size:24px; cursor:pointer; color: #555;" onclick="closeCart()">✖</button>
+      </div>
+      <div id="cartItemsContainer" style="margin-bottom: 15px;"></div>
+      <div class="cart-total"><span>Total:</span><span id="cartTotalDisplay">රු. 0.00</span></div>
+      <div style="margin-top: 20px;">
+        <label style="font-size: 13px; font-weight: bold; color: #555;">මේස අංකය / Table Number</label><input type="text" id="orderTable" class="input-field" placeholder="E.g. Table 03 (Takeaway)">
+        <label style="font-size: 13px; font-weight: bold; color: #555;">ඔබගේ නම / Your Name</label><input type="text" id="orderName" class="input-field" placeholder="Enter your name">
+        <label style="font-size: 13px; font-weight: bold; color: #555;">දුරකථන අංකය / Phone</label><input type="tel" id="orderPhone" class="input-field" placeholder="07XXXXXXXX" maxlength="10">
+        <button class="btn-submit" id="placeOrderBtn" onclick="placeOrder()">Place Order Now</button>
+        <p id="orderMsg" style="text-align: center; font-weight: bold; margin-top: 10px; display: none;"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ########################################################
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyBKJVfmAroLt9amqeVbKuBXtn6hY-bd_SMGaqBYE2klD_OkjAleHDqSnI4wRExVZg/exec";
+    // ########################################################
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const shopId = urlParams.get('id');
+    let cart = {}; 
+
+    window.onload = () => {
+      if (!shopId) { document.getElementById('loadingScreen').innerHTML = "<h2 style='color:red;'>Invalid URL</h2>"; return; }
+      
+      // Direct API Call - simplified to bypass status check errors
+      fetch(`${APPS_SCRIPT_URL}?action=profile&id=${shopId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data) {
+            document.getElementById('loadingScreen').style.display = 'none';
+            let p = data.data;
+            document.getElementById('mainContent').style.display = 'block';
+            document.getElementById('bName').innerText = p.BusinessName || "Welcome";
+            if(p.ProfileImage) document.getElementById('profImg').src = p.ProfileImage;
+            if(p.CoverImage) document.getElementById('coverImg').src = p.CoverImage;
+            
+            if(p.BankDetails) { document.getElementById('bankDetailsArea').style.display = 'block'; document.getElementById('bankText').innerText = p.BankDetails; }
+
+            let linksHtml = "";
+            const addLink = (url, icon, cls, text) => { if(url && url.trim()!=="") linksHtml += `<a href="${url}" target="_blank" class="social-btn ${cls}"><i class="${icon}"></i> ${text}</a>`; };
+            addLink(p.WhatsApp, 'fab fa-whatsapp', 'b-wa', 'WhatsApp'); addLink(p.Maps, 'fas fa-map-marker-alt', 'b-map', 'Location'); addLink(p.Facebook, 'fab fa-facebook-f', 'b-fb', 'Facebook'); addLink(p.Instagram, 'fab fa-instagram', 'b-ig', 'Instagram'); addLink(p.TikTok, 'fab fa-tiktok', 'b-tk', 'TikTok'); addLink(p.Website, 'fas fa-globe', 'b-web', 'Website'); addLink(p.MenuPDF, 'fas fa-file-pdf', 'b-menu', 'Menu PDF'); addLink(p.GoogleReview, 'fas fa-star', 'b-rev', 'Rate Us');
+            document.getElementById('linksContainer').innerHTML = linksHtml;
+            loadProducts();
+          } else { 
+            document.getElementById('loadingScreen').innerHTML = "<h2 style='color:red;'>Profile Not Found</h2>";
+          }
+        })
+        .catch(err => {
+          document.getElementById('loadingScreen').innerHTML = `<h2 style='color:red;'>Network Error: ${err.message}</h2>`;
+        });
+    };
+
+    function loadProducts() {
+      fetch(`${APPS_SCRIPT_URL}?action=getProducts&shopId=${shopId}`).then(res => res.json()).then(data => {
+          if (data.success && data.data && data.data.length > 0) {
+            document.getElementById('productsSection').style.display = 'block';
+            let html = "";
+            data.data.forEach(p => {
+              let pName = p.ProductName || p['Product Name'] || "Item"; let pPrice = parseFloat(p.Price || p['Product Price'] || 0); let pId = p.ProductID || p['Product ID'] || Math.random().toString();
+              let imgs = ""; if(p.Image1 || p.img1) imgs += `<img src="${p.Image1 || p.img1}">`;
+              html += `<div class="product-card"><div class="product-info"><h3 class="product-title">${pName}</h3><p class="product-price">රු. ${pPrice.toFixed(2)}</p><div class="product-imgs" style="margin-top:8px;">${imgs}</div></div><div><button class="btn-add" onclick="addToCart('${pId}', '${pName.replace(/'/g, "\\'")}', ${pPrice})"><i class="fas fa-plus"></i> Add</button></div></div>`;
+            });
+            document.getElementById('productsList').innerHTML = html;
+          }
+        }).catch(err => console.log(err));
+    }
+
+    function addToCart(id, name, price) { if(cart[id]) cart[id].qty += 1; else cart[id] = { name: name, price: price, qty: 1 }; updateCartUI(); }
+    function updateCartUI() {
+      let totalQty = 0, totalAmount = 0, html = "";
+      for(let id in cart) { totalQty += cart[id].qty; totalAmount += (cart[id].price * cart[id].qty); html += `<div class="cart-item"><div style="flex:1;"><b>${cart[id].name}</b><br><span style="color:#d32f2f;">රු. ${(cart[id].price * cart[id].qty).toFixed(2)}</span></div><div class="qty-controls"><button class="qty-btn" onclick="changeQty('${id}', -1)">-</button><b>${cart[id].qty}</b><button class="qty-btn" onclick="changeQty('${id}', 1)">+</button></div></div>`; }
+      document.getElementById('cartCount').innerText = totalQty; document.getElementById('cartItemsContainer').innerHTML = html; document.getElementById('cartTotalDisplay').innerText = `රු. ${totalAmount.toFixed(2)}`;
+      document.getElementById('cartBtn').style.display = totalQty > 0 ? 'flex' : 'none'; if(totalQty === 0) closeCart();
+    }
+    function changeQty(id, change) { if(cart[id]) { cart[id].qty += change; if(cart[id].qty <= 0) delete cart[id]; updateCartUI(); } }
+    function openCart() { document.getElementById('cartModal').style.display = 'flex'; }
+    function closeCart() { document.getElementById('cartModal').style.display = 'none'; }
+
+    function placeOrder() {
+      let totalAmount = 0, itemsFormat = {}; 
+      for(let id in cart) { totalAmount += (cart[id].price * cart[id].qty); itemsFormat[cart[id].name] = cart[id].qty; }
+      if(Object.keys(itemsFormat).length === 0) return;
+      const nm = document.getElementById('orderName').value; const msg = document.getElementById('orderMsg');
+      if(!nm) { msg.innerText = "Please enter your name."; msg.style.color = "red"; msg.style.display = "block"; return; }
+      msg.innerText = "Processing Order..."; msg.style.color = "#ff9800"; msg.style.display = "block"; document.getElementById('placeOrderBtn').disabled = true;
+      fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "placeOrder", shopId: shopId, tableNo: document.getElementById('orderTable').value || "Takeaway", customerName: nm, phone: document.getElementById('orderPhone').value, items: itemsFormat, totalAmount: totalAmount }) })
+        .then(res => res.json()).then(data => { document.getElementById('placeOrderBtn').disabled = false; if(data.success) { cart = {}; updateCartUI(); msg.innerText = "✅ Order Placed Successfully!"; msg.style.color = "green"; setTimeout(closeCart, 3000); } else { msg.innerText = "Error: " + data.error; msg.style.color = "red"; } }).catch(err => { document.getElementById('placeOrderBtn').disabled = false; msg.innerText = "Network Error!"; msg.style.color = "red"; });
+    }
+  </script>
+</body>
+</html>
